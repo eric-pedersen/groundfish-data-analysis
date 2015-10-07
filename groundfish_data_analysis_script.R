@@ -31,10 +31,12 @@ require(rgeos)
 require(ggdendro)
 require(mapproj)
 
+
+
 #Load and Preprocess Dataset####
 #Main Dataset
-DFO_Dataset_Init<-read.csv("~/Dropbox/Groundfish working group shared files/data/DFO_SURVEYS_text_cleaner.csv")#DFO Dataset
-DFO_Dataset_2013<-read.csv("~/Dropbox/Groundfish working group shared files/data/DFO_RV_Surveys_kg-per-tow_fish+shrimp+crab_Spring_Fall_2013.csv")
+DFO_Dataset_Init<-read.csv("data/DFO_SURVEYS_text_cleaner.csv")#DFO Dataset
+DFO_Dataset_2013<-read.csv("data/DFO_RV_Surveys_kg-per-tow_fish+shrimp+crab_Spring_Fall_2013.csv")
 
 DFO_Dataset<-rbind.fill(DFO_Dataset_Init,DFO_Dataset_2013)[,1:ncol(DFO_Dataset_Init)]
 
@@ -203,7 +205,7 @@ alpha=0.05
 # adjust paths to fit. 
 
 #Loads previously calculated Voronoi polygon centroids
-load("~/Dropbox/Groundfish working group shared files/data/map_files/meeting 2/voronoi_shapes.Rdat")
+load("data/map_files/meeting 2/voronoi_shapes.Rdat")
 voronoi_centroids = as.data.frame(getSpPPolygonsLabptSlots(voronoi_shapes))
 names(voronoi_centroids) = c("LONG_DEC","LAT_DEC")
 voronoi_centroids$polygon = voronoi_shapes$voroLatt
@@ -712,7 +714,7 @@ axis.V<-1.1
 label.V<-1.2
 
 #Figure 1#####
-pdf("Fig. 1 - 5yr.pdf", height=7,width=7)
+pdf("Figures/Fig. 1 - 5yr.pdf", height=7,width=7)
 par(mfrow=c(3,1),mar=c(2,5,0,2),oma=c(3,1,1,1),las=1)
 plot(Total_Biomass$Bmass[1:14]~c(1981:1994),type='l',lty=1, lwd=2, ylab="Biomass (kg/tow)", xlab=NA,ylim=c(0,210),cex.lab=label.V,cex.axis=axis.V,xaxt='n',xlim=c(1981,2013))
 lines(Total_Biomass$Bmass[15:33]~c(1995:2013),lty=1, lwd=2)
@@ -784,7 +786,7 @@ mtext("Year",side=1,outer=T,line=1,  adj=0.525,cex=1)
 legend("topleft", "c",bty='n', cex=1.8, inset=c(-0.04,-0.025))
 dev.off()
 
-#Figure 3####
+#Figure 2####
 ColV2<-c("#253494","#fc4e2a","#4eb3d3")
 ColV2<-c(brewer.pal(3,"Dark2")[1:2],"#e425a7")
 
@@ -793,7 +795,7 @@ colVseg<-c(rep(ColV2[1],9),rep(ColV2[2],4),NA,rep(ColV2[3],23))
 
 Percent_Com<-Year_Geom_Means/rowSums(Year_Geom_Means)
 
-pdf("Fig. 2.pdf", height=5,width=7)
+pdf("Figures/Fig. 2.pdf", height=5,width=7)
 par(mar=c(4,4,1,1),oma=c(2,2,2,2),las=1)
 layout(matrix(c(1,2,3,4,4,4),2,3, byrow=T))
 par(pty='s')
@@ -847,7 +849,7 @@ dev.off()
 
 
 #Figure 3####
-pdf("Fig. 3.pdf",width = 12,height = 10)
+pdf("Figures/Fig. 3.pdf",width = 12,height = 10)
 {
 PlotMultipleGgplotObjs(polygon_cod_plot,polygon_total_plot,depth_voronoi_plot, comp_plot, 
                        layout=matrix(c(1,1,1,2,2,2,3,4,4),nrow = 3,byrow = T))
@@ -882,7 +884,7 @@ Ref_spatial_1981<-(1-spatial_BC[-1,])*100
 #Ref_spatial_1981<-apply(Ref_spatial_1981,2,function(x){x/x[1]})
 matplot(Ref_spatial_1981,type='l', lty=1,col=1)
 
-pdf("Fig. 4.pdf",height=5,width=7)
+pdf("Figures/Fig. 4.pdf",height=5,width=7)
 par(las=1, mfrow=c(1,1),pty='m')
 plot(Ref_bmass_1981[1:14]~c(1981:1994), type='l', lwd=2, ylab="Scaled similarity to 1981", xlab="Year",pch=19, xlim=c(1980,2014), ylim=c(0,120))
 lines(Ref_bmass_1981[15:33]~c(1995:2013), type='l',lwd=2, col=1, pch=19)
@@ -901,7 +903,7 @@ dev.off()
 
 
 #Fig S1####
-pdf("~/Dropbox/Groundfish working group shared files/Manuscript 1/Figures/Fig. S1.pdf",width = 15,height = 10)
+pdf("Figures/Fig. S1.pdf",width = 15,height = 10)
 {
 PlotMultipleGgplotObjs(polygon_total_plot ,
                        polygon_top4_plot, 
@@ -912,7 +914,7 @@ dev.off()
 
 
 #Figure S2####
-pdf("Fig. S2.pdf", height=7,width=7)
+pdf("Figures/Fig. S2.pdf", height=7,width=7)
 par(mfrow=c(3,1),mar=c(2,5,0,2),oma=c(3,1,1,1),las=1)
 plot(c(1981:2013),div_dist_models[div_dist_models$community_subset=="sp_dist_scl" & div_dist_models$coef=="Spatial Distance","R2_value"],type='n', ylab=expression(paste("Distance R"^"2")), ylim=c(0,0.3), xlab=NA,xaxt='n', cex.lab=label.V,cex.axis=axis.V, xlim=c(1980,2013))
 for(i in 1:3){
