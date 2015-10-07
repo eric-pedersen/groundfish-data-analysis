@@ -2,6 +2,9 @@
 #Paper 1
 #March 2014
 
+# This code requires a clean groundfish community data set added to the data folder. 
+# Data are available by request from Fisheries and Oceans Canada (pierre.pepin@dfo-mpo.gc.ca) 
+
 #Clear workspace
 rm(list=ls(all=TRUE))
 
