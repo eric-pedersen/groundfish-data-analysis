@@ -3,5 +3,3 @@
 # Except this file
 !.gitignore
 !README.md
-!raw_data/.gitkeep
-!clean_data/.gitkeep
