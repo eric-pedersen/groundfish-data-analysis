@@ -94,7 +94,8 @@ plotCI(c(1981:2013),Total_Biomass_rare$Bmass,uiw=Total_Biomass_rare$jack.se,add=
 lines(c(1981:1994),Total_Biomass_rare$Bmass[1:14],type='l',lty=3, lwd=2, ylim=c(0,1))
 lines(c(1995:2013),Total_Biomass_rare$Bmass[15:33],type='l',lty=3, lwd=2, ylim=c(0,1))
 abline(v=Eras, lwd=1,lty=2, col=8)
-legend("topright",c("total community","remaining species"),lty=c(1,3),lwd=2,bty='o',bg="white",box.col="#FF003300",inset=0.005,cex=1.1)
+legend("topright",c("total community","non-commercial species"),
+       lty=c(1,3),lwd=2,bty='o',bg="white",box.col="#FF003300",inset=0.005,cex=1.1)
 legend("topleft", "a",bty='n', cex=1.8, inset=c(-0.04,-0.025))
 
 
