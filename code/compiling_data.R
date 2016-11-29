@@ -5,7 +5,6 @@
 # This code librarys a clean groundfish community data set added to the data folder. 
 # Data are available by request from Fisheries and Oceans Canada (pierre.pepin@dfo-mpo.gc.ca) 
 
-#Calculate Year Means####
 #Clear workspace
 rm(list=ls(all=TRUE))
 
@@ -70,6 +69,8 @@ DFO_Dataset = DFO_Dataset[,!names(DFO_Dataset)%in% gear_sensitive_species_names]
 DFO_Com<-DFO_Dataset[,31:ncol(DFO_Dataset)]
 
 
+Year<-factor(DFO_Dataset$Year,ordered=T)
+
 #Calculating yearly geometric means for synchrony and ordination calculations####
 Year_Geom_Means<-data.frame(matrix(NA,length(unique(Year)),
                                    ncol(DFO_Com),
@@ -89,7 +90,7 @@ for(i in 1:ncol(DFO_Com)){
 }
 
 
-#mean density and subsets of mean densities across years
+#mean density and subsets of mean densities across years 
 Year_Geom_Means_all<-Year_Geom_Means
 Year_Geom_Means_rare<-Year_Geom_Means[,!names(Year_Geom_Means)%in% top4_sp]
 
@@ -121,9 +122,44 @@ voronoi_data = voronoi_data %>%
                  LAT_DEC:Temp_at_fishing, 
                  DIV, ANARHICHAS_DENTICULATUS:UROPHYCIS_TENUIS)
 
+
+#Transforming data from  clustering maps
+clust_map_data = DFO_Dataset
+clust_map_data[,c("polygon","LONG_DEC","LAT_DEC")]= over(SpatialPoints(cbind(clust_map_data$LONG_DEC, clust_map_data$LAT_DEC)), voronoi_shapes)
+clust_map_data = clust_map_data %>% 
+  group_by(polygon) %>% 
+  mutate(Depth=mean(Depth,na.rm = T))%>% 
+  ungroup()
+
+year_groups = c("1981-1984","1985-1989","1990-1994","1995-2001","2002-2006", "2007-2013")
+
+#classifies years into 6 sets of years.
+clust_map_data$Year_group = with(clust_map_data,
+                                 ifelse(Year<1985, year_groups[1],
+                                        ifelse(Year<1990, year_groups[2],
+                                               ifelse(Year<1995, year_groups[3],
+                                                      ifelse(Year<2002, year_groups[4],
+                                                             ifelse(Year<2007, year_groups[5],
+                                                                    year_groups[6]
+                                                             ))))))
+
+clust_map_data = clust_map_data[!rowSums(clust_map_data[,31:60])==0,]
+
+
+# Calculates geom-mean density for each species in each year group in each polygon
+clust_map_data = ddply(clust_map_data, .(polygon, Year_group),function(x){
+  out_data = x[1,]
+  out_data[1,31:60] = apply(x[,31:60],MARGIN=2, 
+                            FUN=CalcZeroInfGeomDens)
+  #out_data[1,31:60] = out_data[1,31:60]/sum(out_data[1,31:60])
+  return(out_data)
+})
+
+
 write.csv(DFO_Com, "data/DFO_Com.csv",row.names = F)
 write.csv(DFO_Dataset, "data/DFO_Dataset.csv",row.names = F)
 write.csv(voronoi_data, "data/voronoi_data.csv",row.names = F)
+write.csv(clust_map_data, "data/clust_map_data.csv",row.names = F)
 save(Year_Geom_Means,Year_Geom_Means_all,Year_Geom_Means_rare,Year_Geom_Means_SE,
      file = "data/year_geom_means.Rdata")
 
