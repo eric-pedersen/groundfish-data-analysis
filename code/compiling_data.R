@@ -91,6 +91,9 @@ for(i in 1:ncol(DFO_Com)){
 
 
 #mean density and subsets of mean densities across years 
+top4_sp = c("GADUS_MORHUA","SEBASTES_MENTELLA","REINHARDTIUS_HIPPOGLOSSOIDES", 
+            "HIPPOGLOSSOIDES_PLATESSOIDES")
+
 Year_Geom_Means_all<-Year_Geom_Means
 Year_Geom_Means_rare<-Year_Geom_Means[,!names(Year_Geom_Means)%in% top4_sp]
 
