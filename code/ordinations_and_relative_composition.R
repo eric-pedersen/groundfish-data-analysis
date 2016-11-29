@@ -13,6 +13,7 @@ library(RColorBrewer)
 source("code/functions.R")
 DFO_Com = read.csv("data/DFO_Com.csv",stringsAsFactors = F)
 DFO_Dataset = read.csv("data/DFO_Dataset.csv",stringsAsFactors = F)
+load("data/year_geom_means.Rdata")
 
 Div<-DFO_Dataset$DIV
 Year<-factor(DFO_Dataset$Year,ordered=T)
@@ -29,28 +30,6 @@ Year_Geom_Means<-data.frame(matrix(NA,length(unique(Year)),
 
 
 
-#Calculating yearly geometric means for synchrony calculations
-Year_Geom_Means<-data.frame(matrix(NA,length(unique(Year)),
-                                   ncol(DFO_Com),
-                                   dimnames=list(levels(Year),
-                                                 colnames(DFO_Com))))
-
-Year_Geom_Means_SE<-Year_Geom_Means
-for(i in 1:ncol(DFO_Com)){
-  hold<- ddply(DFO_Com,.variables=.(Year),
-               .fun=function(x){
-                 time_series = x[,i]
-                 jack<-jackknife(time_series,CalcZeroInfGeomDens)
-                 return(data.frame(Bmass=mean(jack$jack.values),jack.se=jack$jack.se))
-               })
-  Year_Geom_Means[,i]<-hold$Bmass
-  Year_Geom_Means_SE[,i]<-hold$jack.se
-}
-
-
-#mean density and subsets of mean densities across years
-Year_Geom_Means_all<-Year_Geom_Means
-Year_Geom_Means_rare<-Year_Geom_Means[,!names(Year_Geom_Means)%in% top4_sp]
 
 
 #NMDS Calculations####

@@ -15,6 +15,7 @@ source("code/functions.R")
 library(plyr)
 library(dplyr)
 library(sp)
+library(bootstrap)
 
 
 
@@ -69,6 +70,30 @@ DFO_Dataset = DFO_Dataset[,!names(DFO_Dataset)%in% gear_sensitive_species_names]
 DFO_Com<-DFO_Dataset[,31:ncol(DFO_Dataset)]
 
 
+#Calculating yearly geometric means for synchrony and ordination calculations####
+Year_Geom_Means<-data.frame(matrix(NA,length(unique(Year)),
+                                   ncol(DFO_Com),
+                                   dimnames=list(levels(Year),
+                                                 colnames(DFO_Com))))
+
+Year_Geom_Means_SE<-Year_Geom_Means
+for(i in 1:ncol(DFO_Com)){
+  hold<- ddply(DFO_Com,.variables=.(Year),
+               .fun=function(x){
+                 time_series = x[,i]
+                 jack<-jackknife(time_series,CalcZeroInfGeomDens)
+                 return(data.frame(Bmass=mean(jack$jack.values),jack.se=jack$jack.se))
+               })
+  Year_Geom_Means[,i]<-hold$Bmass
+  Year_Geom_Means_SE[,i]<-hold$jack.se
+}
+
+
+#mean density and subsets of mean densities across years
+Year_Geom_Means_all<-Year_Geom_Means
+Year_Geom_Means_rare<-Year_Geom_Means[,!names(Year_Geom_Means)%in% top4_sp]
+
+
 
 #Loads previously calculated Voronoi polygon centroids ####
 load("data/voronoi_shapes.Rdat")
@@ -99,5 +124,7 @@ voronoi_data = voronoi_data %>%
 write.csv(DFO_Com, "data/DFO_Com.csv",row.names = F)
 write.csv(DFO_Dataset, "data/DFO_Dataset.csv",row.names = F)
 write.csv(voronoi_data, "data/voronoi_data.csv",row.names = F)
+save(Year_Geom_Means,Year_Geom_Means_all,Year_Geom_Means_rare,Year_Geom_Means_SE,
+     file = "data/year_geom_means.Rdata")
 
 
