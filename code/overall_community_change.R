@@ -15,6 +15,7 @@ source("code/functions.R")
 load("data/year_geom_means.Rdata")
 voronoi_data= read.csv("data/voronoi_data.csv", stringsAsFactors = F)
 DFO_Dataset = read.csv("data/DFO_Dataset.csv", stringsAsFactors = F)
+Func_Div = read.csv("data/func_div_data.csv",stringsAsFactors = F)
 
 biomass = DFO_Dataset %>%
   group_by(Year) %>%
@@ -41,6 +42,8 @@ for(i in 1:length(polygons)){
   rm(current_dist, current_voronoi)
 }
 
+Ref_com_1981<-(1-decostand(diss.tax[,1],"range"))*100
+
 Ref_bmass_1981<-biomass$Bmass/biomass$Bmass[1]
 #Ref_bmass_1981<-Ref_bmass_1981[-1]
 Ref_bmass_1981<-(Ref_bmass_1981-min(Ref_bmass_1981))/(Ref_bmass_1981-min(Ref_bmass_1981))[1]*100
@@ -48,6 +51,9 @@ Ref_bmass_1981<-(Ref_bmass_1981-min(Ref_bmass_1981))/(Ref_bmass_1981-min(Ref_bma
 Ref_cod_1981<-Year_Geom_Means$GADUS_MORHUA/Year_Geom_Means$GADUS_MORHUA[1]
 #Ref_cod_1981 <-Ref_cod_1981[-1]
 Ref_cod_1981 <-(Ref_cod_1981-min(Ref_cod_1981))/(Ref_cod_1981-min(Ref_cod_1981))[1]*100
+
+Ref_fdis_1981 = Func_Div$FDis/Func_Div$FDis[1]
+Ref_fdis_1981 = (Ref_fdis_1981 - min(Ref_fdis_1981))/(Ref_fdis_1981-min(Ref_fdis_1981))[1]*100
 
 
 #Figure 4####
@@ -60,7 +66,7 @@ ColV<-brewer.pal(9,"Set1")
 Eras<-c(1990,1995)
 
 
-pdf("Figures/Fig. 4.pdf",height=5,width=7)
+pdf("Figures/Fig. 5.pdf",height=6,width=8)
 par(las=1, mfrow=c(1,1),pty='m')
 plot(Ref_bmass_1981[1:14]~c(1981:1994), type='l', lwd=2, ylab="Scaled similarity to 1981", xlab="Year",pch=19, xlim=c(1980,2014), ylim=c(0,120))
 lines(Ref_bmass_1981[15:33]~c(1995:2013), type='l',lwd=2, col=1, pch=19)
@@ -68,11 +74,14 @@ lines(Ref_com_1981[1:14]~c(1981:1994), type='l',lwd=2, col="dodgerblue3", pch=19
 lines(Ref_com_1981[15:33]~c(1995:2013), type='l',lwd=2, col="dodgerblue3", pch=19)
 lines(Ref_cod_1981[1:14]~c(1981:1994), type='l', lwd=2,col=ColV[1], pch=19)
 lines(Ref_cod_1981[15:33]~c(1995:2013), type='l', lwd=2,col=ColV[1], pch=19)
+lines(Ref_fdis_1981[1:14]~c(1981:1994), type='l', lwd=2,col="forestgreen", pch=19)
+lines(Ref_fdis_1981[15:33]~c(1995:2013), type='l', lwd=2,col="forestgreen", pch=19)
 text(x=2014.2,y=Ref_bmass_1981[33],labels=round(Ref_bmass_1981,digits=0)[33])
 text(x=2014.2,y= Ref_cod_1981[33],labels=round(Ref_cod_1981,digits=0)[33], col=ColV[1])
 text(x=2014.2,y=Ref_com_1981[33],labels=round(Ref_com_1981,digits=0)[33], col= "dodgerblue3")
+text(x=2014.2,y=Ref_fdis_1981[33],labels=round(Ref_fdis_1981,digits=0)[33], col= "forestgreen")
 abline(v=c(1990,1995), lty=2)
-legend("topright",legend=c("community biomass","cod biomass","community composition"), lwd=2,col=c(1,ColV[1],"dodgerblue3"
-), bty='n')
+legend("bottomleft",legend=c("community biomass","cod biomass","community composition", "functional diversity"), 
+       lwd=2,col=c(1,ColV[1],"dodgerblue3", "forestgreen"), bty='n')
 dev.off()
 
