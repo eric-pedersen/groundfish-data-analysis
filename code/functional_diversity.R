@@ -98,3 +98,8 @@ legend("bottomright",c("total community","non-commercial species"),
        lty=c(1,3),lwd=2,bty='o',bg=NA,box.col="#FF003300",
        inset=0.005,cex=1.1)
 dev.off()
+
+func_div_data = data.frame(Year = 1981:2013, FDis = Func_Div$FDis)
+#save the functional dispersion code so it doesn't have to be rerun all the time
+write.csv(func_div_data,"data/func_div_data.csv",row.names = F)
+
