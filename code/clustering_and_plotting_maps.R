@@ -162,10 +162,10 @@ polygon_outline = fortify(polygon_outline)
 names(polygon_outline)[1:2] = c("LONG_DEC","LAT_DEC")
 
 
-cluster_palette=c("#1F78B4","#E31A1C","#A6CEE3",'#984ea3',"#33A02C","#b2df8a",'#fdbf6f')
+cluster_palette=c("#1F78B4","#FF4040","#A6CEE3",'#BF3EFF',"#33A02C","#b2df8a",'#fdbf6f')
+species_palette = c("#FF4040","#1F78B4","#33A02C",'#BF3EFF')
 
-
-cluster_palette_top4 = c("#1F78B4", "#E31A1C", "#33A02C", "#555555" )
+cluster_palette_top4 = c("#1F78B4", "#FF4040", "#33A02C", "#555555" )
 lat_long_labels = list(scale_x_continuous(breaks = c(-55,-50), 
                                           labels = c(expression(55*degree*0*minute*0*second*'W'),
                                                      expression(50*degree*0*minute*0*second*'W'))),
@@ -239,7 +239,7 @@ depth_voronoi_plot = ggplot(aes(x=LONG_DEC, y=LAT_DEC),
 comp_plot = ggplot(aes(x=cluster, y=proportion),
                    data=cluster_composition)+
   geom_bar(stat="identity", aes(fill=species,order= species))+
-  scale_fill_brewer("Species",palette="Set1")+
+  scale_fill_manual(values= species_palette)+
   annotate(x=factor(1:7),y = rep(-0.1,times=7),
            colour=cluster_palette,
            geom="point",size=10,shape=18)+
