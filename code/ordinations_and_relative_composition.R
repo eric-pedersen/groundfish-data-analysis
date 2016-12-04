@@ -22,13 +22,6 @@ top4_sp = c("GADUS_MORHUA","SEBASTES_MENTELLA",
             "REINHARDTIUS_HIPPOGLOSSOIDES", "HIPPOGLOSSOIDES_PLATESSOIDES")
 
 
-#Calculating yearly geometric means for ordinations ####
-Year_Geom_Means<-data.frame(matrix(NA,length(unique(Year)),
-                                   ncol(DFO_Com),
-                                   dimnames=list(levels(Year),
-                                                 colnames(DFO_Com))))
-
-
 
 
 
@@ -64,7 +57,7 @@ label.V<-1.2
 #Colour Vector
 ColV<-brewer.pal(9,"Set1")
 Eras<-c(1990,1995)
-
+top4_palette = c("#FF4040","#1F78B4","#33A02C",'#BF3EFF')
 
 
 pdf("Figures/Fig. 2.pdf", height=6,width=6)
@@ -102,15 +95,16 @@ legend("topleft", "b", bty='n', cex=1.8,inset=c(-0.15,0.04))
 par(pty='m')
 plot(Percent_Com$GADUS_MORHUA*100~c(1981:2013),type='n',lwd=2, xaxs="i",yaxs="i",
      ylab="% of total biomass", xlab="Year", 
-     ylim=c(0,100),col=ColV[1],cex.lab=label.V,cex.axis=axis.V)
-polygon(c(1981,1981:1994,1994),c(0,(Percent_Com$REINHARDTIUS_HIPPOGLOSSOIDES+Percent_Com$GADUS_MORHUA+Percent_Com$SEBASTES_MENTELLA+Percent_Com$HIPPOGLOSSOIDES_PLATESSOIDES)[1:14]*100,0), col=ColV[4])
-polygon(c(1981,1981:1994,1994),c(0,(Percent_Com$REINHARDTIUS_HIPPOGLOSSOIDES+Percent_Com$GADUS_MORHUA+Percent_Com$HIPPOGLOSSOIDES_PLATESSOIDES)[1:14]*100,0), col=ColV[3])
-polygon(c(1981,1981:1994,1994),c(0,(Percent_Com$REINHARDTIUS_HIPPOGLOSSOIDES+Percent_Com$GADUS_MORHUA)[1:14]*100,0), col=ColV[2])
-polygon(c(1981,1981:1994,1994),c(0,Percent_Com$GADUS_MORHUA[1:14]*100,0), col=ColV[1])
-polygon(c(1995,1995:2013,2013),c(0,(Percent_Com$REINHARDTIUS_HIPPOGLOSSOIDES+Percent_Com$GADUS_MORHUA+Percent_Com$SEBASTES_MENTELLA+Percent_Com$HIPPOGLOSSOIDES_PLATESSOIDES)[15:33]*100,0), col=ColV[4])
-polygon(c(1995,1995:2013,2013),c(0,(Percent_Com$REINHARDTIUS_HIPPOGLOSSOIDES+Percent_Com$GADUS_MORHUA+Percent_Com$HIPPOGLOSSOIDES_PLATESSOIDES)[15:33]*100,0), col=ColV[3])
-polygon(c(1995,1995:2013,2013),c(0,(Percent_Com$REINHARDTIUS_HIPPOGLOSSOIDES+Percent_Com$GADUS_MORHUA)[15:33]*100,0), col=ColV[2])
-polygon(c(1995,1995:2013,2013),c(0,Percent_Com$GADUS_MORHUA[15:33]*100,0), col=ColV[1])
+     ylim=c(0,100),col=top4_palette[1],cex.lab=label.V,cex.axis=axis.V)
+polygon(c(1981,1981:1994,1994),
+        c(0,(Percent_Com$REINHARDTIUS_HIPPOGLOSSOIDES+Percent_Com$GADUS_MORHUA+Percent_Com$SEBASTES_MENTELLA+Percent_Com$HIPPOGLOSSOIDES_PLATESSOIDES)[1:14]*100,0), col=top4_palette[4])
+polygon(c(1981,1981:1994,1994),c(0,(Percent_Com$REINHARDTIUS_HIPPOGLOSSOIDES+Percent_Com$GADUS_MORHUA+Percent_Com$HIPPOGLOSSOIDES_PLATESSOIDES)[1:14]*100,0), col=top4_palette[3])
+polygon(c(1981,1981:1994,1994),c(0,(Percent_Com$REINHARDTIUS_HIPPOGLOSSOIDES+Percent_Com$GADUS_MORHUA)[1:14]*100,0), col=top4_palette[2])
+polygon(c(1981,1981:1994,1994),c(0,Percent_Com$GADUS_MORHUA[1:14]*100,0), col=top4_palette[1])
+polygon(c(1995,1995:2013,2013),c(0,(Percent_Com$REINHARDTIUS_HIPPOGLOSSOIDES+Percent_Com$GADUS_MORHUA+Percent_Com$SEBASTES_MENTELLA+Percent_Com$HIPPOGLOSSOIDES_PLATESSOIDES)[15:33]*100,0), col=top4_palette[4])
+polygon(c(1995,1995:2013,2013),c(0,(Percent_Com$REINHARDTIUS_HIPPOGLOSSOIDES+Percent_Com$GADUS_MORHUA+Percent_Com$HIPPOGLOSSOIDES_PLATESSOIDES)[15:33]*100,0), col=top4_palette[3])
+polygon(c(1995,1995:2013,2013),c(0,(Percent_Com$REINHARDTIUS_HIPPOGLOSSOIDES+Percent_Com$GADUS_MORHUA)[15:33]*100,0), col=top4_palette[2])
+polygon(c(1995,1995:2013,2013),c(0,Percent_Com$GADUS_MORHUA[15:33]*100,0), col=top4_palette[1])
 abline(v=Eras, lwd=1,lty=2, col=8)
 axis(1,seq(1980,2010,by=5),cex=1.4,labels=F,tick=T)
 legend("topleft", "c", bty='n', cex=1.8,inset=c(-0.035,0))
