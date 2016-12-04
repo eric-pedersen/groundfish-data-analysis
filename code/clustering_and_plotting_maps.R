@@ -12,6 +12,10 @@ library(ggplot2)
 library(ggdendro)
 library(sp)
 library(maptools)
+library(rgeos)
+library(ggpolypath)
+library(stringr)
+
 
 
 #Loading data and functions ####
@@ -74,6 +78,45 @@ polygon_map_data = left_join(polygon_map_data,
                              clust_map_data[,c("polygon","Year_group","cluster",
                                                "cluster_top4","cluster_remain", "Depth","cod_percent")])
 
+#Merge polygons into contiguous regions with the same clusters ####
+#This is based off code from http://gis.stackexchange.com/questions/63577/joining-polygons-in-r
+year_group_polygons = list()
+n_vals = length(unique(paste(polygon_map_data$Year_group, polygon_map_data$polygon)))
+year_group_data = data.frame(cluster=rep(0, times=n_vals),
+                             Year_group = rep(0, times= n_vals),
+                             polygon = rep(0, times=n_vals))
+counter= 1
+for(i in unique(polygon_map_data$polygon)){
+  for(j in unique(polygon_map_data$Year_group)){
+    current_data =polygon_map_data%>%
+      filter(Year_group==j, polygon==i)%>%
+      select(LONG_DEC,LAT_DEC,cluster,Year_group,polygon)
+    current_id = paste(i,j, sep = "_")
+    year_group_polygons[[counter]] = Polygon(coords=current_data[,1:2],hole = F)
+    year_group_polygons[[counter]] = Polygons(list(year_group_polygons[[counter]]),current_id)
+    year_group_data[counter,] = current_data[1,3:5]
+    counter = counter+1
+  }
+}
+rownames(year_group_data) = paste(year_group_data$polygon, 
+                                  year_group_data$Year_group,sep="_")
+
+
+polygon_map_total_data = SpatialPolygonsDataFrame(SpatialPolygons(year_group_polygons), 
+                             year_group_data)
+#clears up some issues with the shapes of the polygons having intersections
+#based on code from http://gis.stackexchange.com/questions/163445/r-solution-for-topologyexception-input-geom-1-is-invalid-self-intersection-er
+polygon_map_total_data = gBuffer(polygon_map_total_data,byid = T,width = 0) 
+polygon_map_total_data = unionSpatialPolygons(polygon_map_total_data, 
+                                        paste(year_group_data$cluster, 
+                                              year_group_data$Year_group, sep= " "))
+
+polygon_map_total_data= fortify(polygon_map_total_data) %>%
+  mutate(cluster = str_split_fixed(id," ",n = 2)[,1],
+         Year_group =str_split_fixed(id," ",n = 2)[,2],
+         LONG_DEC= long, LAT_DEC= lat,
+         cluster= ifelse(cluster=="NA", NA, cluster))
+
 
 
 #### Building a depth-voronoi polygon dataset ####
@@ -133,26 +176,30 @@ lat_long_labels = list(scale_x_continuous(breaks = c(-55,-50),
 
 polygon_plot = ggplot(aes(x=LONG_DEC, y=LAT_DEC),
                       data= polygon_map_data)+
-  geom_polygon(data=polygon_outline, fill=NA, colour="black",
-               aes(group=piece,order=order))+
+  geom_polygon(fill=NA, colour="black",aes(group=group))+
   coord_map(projection="albers",lat0=min(polygon_map_data$LAT_DEC),
             lat1= max(polygon_map_data$LAT_DEC))+
   facet_grid(.~Year_group)+
   lat_long_labels+
   scale_size_continuous("Depth (m)",range = c(0.25,0.01))+
-  scale_colour_gradient("Depth (m)",high= "#093f9c", low = "#d6d6ff",guide="none")+
+  scale_colour_gradient("Depth (m)",high= "#093f9c", low = "#d6d6ff",
+                        guide="none")+
   theme_bw()+
-  theme(text=element_text(size=15),panel.grid.minor=element_blank(),legend.position="bottom",
+  theme(text=element_text(size=15),panel.grid.minor=element_blank(),
+        legend.position="bottom",
         axis.text = element_text(size=10),
         axis.title=element_blank())
 
 
 polygon_total_plot =polygon_plot + 
   scale_fill_manual(values= cluster_palette,guide="none",na.value = "#aaaaaa")+
-  geom_polygon(aes(group= polygon,fill= cluster,order=order))
+  geom_polypath(data=polygon_map_total_data,
+               aes(group= group,fill= cluster),
+               col="black",size=0.5)
 
 polygon_top4_plot = polygon_plot + 
-  scale_fill_manual(values= cluster_palette_top4,guide="none",na.value = "#aaaaaa")+
+  scale_fill_manual(values= cluster_palette_top4,guide="none",
+                    na.value = "#aaaaaa")+
   geom_polygon(aes(group= polygon,fill= cluster_top4,order=order))
 
 polygon_remain_plot =polygon_plot + 
@@ -161,7 +208,8 @@ polygon_remain_plot =polygon_plot +
 
 
 polygon_cod_plot=polygon_plot+
-  scale_fill_continuous(low="#ffffff",high="#e41a1c",guide="none",na.value="#aaaaaa")+
+  scale_fill_continuous(low="#ffffff",high="#e41a1c",guide="none",
+                        na.value="#aaaaaa")+
   geom_polygon(aes(group= polygon,fill= cod_percent,order=order))
 
 
@@ -169,7 +217,8 @@ polygon_cod_plot=polygon_plot+
 #Depth map with Voronoi polygons
 voronoi_depth_classes = paste(seq(0,1200, by=150),seq(149,1349, by=150),sep="-")
 voronoi_depth_classes[9] = "1200+"
-depth_voronoi_plot = ggplot(aes(x=LONG_DEC, y=LAT_DEC),data=depth_voronoi_map_data)+
+depth_voronoi_plot = ggplot(aes(x=LONG_DEC, y=LAT_DEC),
+                            data=depth_voronoi_map_data)+
   geom_polygon(aes(group= polygon,fill= Depth,order=order))+
   geom_polygon(data=polygon_outline, fill=NA, colour="black",
                aes(group=piece,order=order))+
@@ -198,7 +247,8 @@ comp_plot = ggplot(aes(x=cluster, y=proportion),
   scale_y_continuous("Average % of community",breaks = c(0,0.25,0.5,0.75,1))+
   scale_x_discrete("Community cluster")+
   theme_bw()+
-  theme(text= element_text(size=15),panel.grid.major.x = element_blank(),axis.text.x=element_blank(),
+  theme(text= element_text(size=15),panel.grid.major.x = element_blank(),
+        axis.text.x=element_blank(),
         axis.ticks.x  = element_blank(),legend.direction="horizontal",
         legend.position = c(0.5,0.9))
 
