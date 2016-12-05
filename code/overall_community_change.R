@@ -62,26 +62,27 @@ axis.V<-1.1
 label.V<-1.2
 
 #Colour Vector
-ColV<-brewer.pal(9,"Set1")
+cod_col ="#FF4040"
 Eras<-c(1990,1995)
 
 
 pdf("Figures/Fig. 5.pdf",height=6,width=8)
 par(las=1, mfrow=c(1,1),pty='m')
-plot(Ref_bmass_1981[1:14]~c(1981:1994), type='l', lwd=2, ylab="Scaled similarity to 1981", xlab="Year",pch=19, xlim=c(1980,2014), ylim=c(0,120))
+plot(Ref_bmass_1981[1:14]~c(1981:1994), type='l', lwd=2, ylab="Scaled similarity to 1981", 
+     xlab="Year",pch=19, xlim=c(1980,2014), ylim=c(0,120))
 lines(Ref_bmass_1981[15:33]~c(1995:2013), type='l',lwd=2, col=1, pch=19)
 lines(Ref_com_1981[1:14]~c(1981:1994), type='l',lwd=2, col="dodgerblue3", pch=19)
 lines(Ref_com_1981[15:33]~c(1995:2013), type='l',lwd=2, col="dodgerblue3", pch=19)
-lines(Ref_cod_1981[1:14]~c(1981:1994), type='l', lwd=2,col=ColV[1], pch=19)
-lines(Ref_cod_1981[15:33]~c(1995:2013), type='l', lwd=2,col=ColV[1], pch=19)
+lines(Ref_cod_1981[1:14]~c(1981:1994), type='l', lwd=2,col=cod_col, pch=19)
+lines(Ref_cod_1981[15:33]~c(1995:2013), type='l', lwd=2,col=cod_col, pch=19)
 lines(Ref_fdis_1981[1:14]~c(1981:1994), type='l', lwd=2,col="forestgreen", pch=19)
 lines(Ref_fdis_1981[15:33]~c(1995:2013), type='l', lwd=2,col="forestgreen", pch=19)
 text(x=2014.2,y=Ref_bmass_1981[33],labels=round(Ref_bmass_1981,digits=0)[33])
-text(x=2014.2,y= Ref_cod_1981[33],labels=round(Ref_cod_1981,digits=0)[33], col=ColV[1])
+text(x=2014.2,y= Ref_cod_1981[33],labels=round(Ref_cod_1981,digits=0)[33], col=cod_col)
 text(x=2014.2,y=Ref_com_1981[33],labels=round(Ref_com_1981,digits=0)[33], col= "dodgerblue3")
 text(x=2014.2,y=Ref_fdis_1981[33],labels=round(Ref_fdis_1981,digits=0)[33], col= "forestgreen")
 abline(v=c(1990,1995), lty=2)
 legend("bottomleft",legend=c("community biomass","cod biomass","community composition", "functional diversity"), 
-       lwd=2,col=c(1,ColV[1],"dodgerblue3", "forestgreen"), bty='n')
+       lwd=2,col=c(1,cod_col,"dodgerblue3", "forestgreen"), bty='n')
 dev.off()
 
