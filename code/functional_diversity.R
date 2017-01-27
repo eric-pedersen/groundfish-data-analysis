@@ -83,7 +83,7 @@ for(y in 1981:2013){
   FDis_jack_rare[y-1980,2]<-mean(A)
   FDis_jack_rare[y-1980,3]<-sd(A)/sqrt(length(A))}
 
-# Calculating weighted mean trait data ####
+# Calculating weighted mean trait data for total community ####
 vertical_total_data = sum_traits_by_biomass("vertical.position",Traits,
                                       Year_Geom_Means,discrete = T )
 vertical_total_data$trait_value = factor(vertical_total_data$trait_value, 
@@ -109,6 +109,34 @@ length_total_data = sum_traits_by_biomass("length",Traits,
                                     Year_Geom_Means,discrete = F )
 trophic_total_data = sum_traits_by_biomass("trophic.level",Traits,
                                     Year_Geom_Means,discrete = F )
+
+# Calculating weighted mean trait data for rare species community ####
+vertical_rare_data = sum_traits_by_biomass("vertical.position",Traits,
+                                            Year_Geom_Means_rare,discrete = T )
+vertical_rare_data$trait_value = factor(vertical_rare_data$trait_value, 
+                                         levels =c("bathypelagic","bathydemersal",
+                                                   "demersal","benthopelagic",
+                                                   "pelagic-oceanic"))
+food_rare_data  = sum_traits_by_biomass("Food.Items",Traits,
+                                         Year_Geom_Means_rare,discrete = T )
+food_rare_data$trait_value = factor(food_rare_data$trait_value,
+                                     levels = c("Small Benthivore","Medium Benthivore",
+                                                "Large Benthivore", "PlankPiscivore",
+                                                "Piscivore"))
+agg_rare_data  = sum_traits_by_biomass("Aggregation",Traits,
+                                        Year_Geom_Means_rare,discrete = T )
+agg_rare_data$trait_value = factor(agg_rare_data$trait_value,
+                                    levels = c("irregular","none",
+                                               "rare", "schools",
+                                               "shoal"))
+
+double_rare_data = sum_traits_by_biomass("double.time",Traits,
+                                          Year_Geom_Means_rare,discrete = F )
+length_rare_data = sum_traits_by_biomass("length",Traits,
+                                          Year_Geom_Means_rare,discrete = F )
+trophic_rare_data = sum_traits_by_biomass("trophic.level",Traits,
+                                           Year_Geom_Means_rare,discrete = F )
+
 
 # Creating plots ####
 #Colours and eras used for plotting 
@@ -136,6 +164,8 @@ func_div_data = data.frame(Year = 1981:2013, FDis = Func_Div$FDis)
 #save the functional dispersion code so it doesn't have to be rerun all the time
 write.csv(func_div_data,"data/func_div_data.csv",row.names = F)
 
+
+#Plotting mean trait values for the total community ####
 discrete_plot = list(aes(Year, proportion, color=trait_value,
                          group = paste(trait_value,Year<1995)),
                      geom_line(size=2), theme_bw(12),
@@ -149,39 +179,81 @@ continuous_plot = list(aes(Year, value,
                        geom_line(size=2), theme_bw(12),
                        geom_vline(xintercept = Eras,linetype=2))
 
-agg_plot = ggplot(data= agg_total_data) + 
+agg_total_plot = ggplot(data= agg_total_data) + 
   discrete_plot+
   scale_color_viridis("Aggregation",discrete = T)+
   annotate(geom="text",label = "A", x = 1982, y=0.9,size=5)
 
-food_plot = ggplot(data= food_total_data) + 
+food_total_plot = ggplot(data= food_total_data) + 
   discrete_plot+
   scale_color_viridis("Food\nniche",discrete = T,option = "inferno")+
   annotate(geom="text",label = "B", x = 1982, y=0.9,size=5)
 
-vertical_plot = ggplot(data= vertical_total_data) + 
+vertical_total_plot = ggplot(data= vertical_total_data) + 
   discrete_plot+
   scale_color_viridis("Vertical\nposition",discrete = T,option = "plasma")+
   annotate(geom="text",label = "C", x = 1982, y=0.9,size=5)
 
 
-double_plot =  ggplot(data= double_total_data) + 
+double_total_plot =  ggplot(data= double_total_data) + 
   continuous_plot+
   scale_y_continuous("Mean doubling time (years)")+
   annotate(geom="text",label = "D", x = 1982, y=9.5,size=5)
 
-trophic_plot =  ggplot(data= trophic_total_data) + 
+trophic_total_plot =  ggplot(data= trophic_total_data) + 
   continuous_plot+
   scale_y_continuous("Mean trophic level")+
   annotate(geom="text",label = "E", x = 1982, y=4.15,size=5)
 
-length_plot =  ggplot(data= length_total_data) + 
+length_total_plot =  ggplot(data= length_total_data) + 
   continuous_plot+
   scale_y_continuous("Mean maximum body length (cm)")+
   annotate(geom="text",label = "F", x = 1982, y=140,size=5)
 
 pdf("figures/Fig. S2.pdf",width=12, height=6)
 
-PlotMultipleGgplotObjs(agg_plot, food_plot, vertical_plot, double_plot,trophic_plot,length_plot,
+PlotMultipleGgplotObjs(agg_total_plot, food_total_plot, vertical_total_plot, double_total_plot,trophic_total_plot,length_total_plot,
+                       layout = matrix(c(1:3,1:3, 1:3, 4:6,4:6),ncol = 3,byrow = T))
+dev.off()
+
+
+#Plotting mean trait values for the rare species community ####
+
+agg_rare_plot = ggplot(data= agg_rare_data) + 
+  discrete_plot+
+  scale_color_viridis("Aggregation",discrete = T)+
+  annotate(geom="text",label = "A", x = 1982, y=0.9,size=5)
+
+food_rare_plot = ggplot(data= food_rare_data) + 
+  discrete_plot+
+  scale_color_viridis("Food\nniche",discrete = T,option = "inferno")+
+  annotate(geom="text",label = "B", x = 1982, y=0.9,size=5)
+
+vertical_rare_plot = ggplot(data= vertical_rare_data) + 
+  discrete_plot+
+  scale_color_viridis("Vertical\nposition",discrete = T,option = "plasma")+
+  annotate(geom="text",label = "C", x = 1982, y=0.9,size=5)
+
+
+double_rare_plot =  ggplot(data= double_rare_data) + 
+  continuous_plot+
+  scale_y_continuous("Mean doubling time (years)", 
+                     limits = range(double_total_data$value))+
+  annotate(geom="text",label = "D", x = 1982, y=9.5,size=5)
+
+trophic_rare_plot =  ggplot(data= trophic_rare_data) + 
+  continuous_plot+
+  scale_y_continuous("Mean trophic level")+
+  annotate(geom="text",label = "E", x = 1982, y=3.95,size=5)
+
+length_rare_plot =  ggplot(data= length_rare_data) + 
+  continuous_plot+
+  scale_y_continuous("Mean maximum body length (cm)", 
+                     limits = c(77.66, 145))+
+  annotate(geom="text",label = "F", x = 1982, y=140,size=5)
+
+pdf("figures/Fig. S3.pdf",width=12, height=6)
+
+PlotMultipleGgplotObjs(agg_rare_plot, food_rare_plot, vertical_rare_plot, double_rare_plot,trophic_rare_plot,length_rare_plot,
                        layout = matrix(c(1:3,1:3, 1:3, 4:6,4:6),ncol = 3,byrow = T))
 dev.off()
