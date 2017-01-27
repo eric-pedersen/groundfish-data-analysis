@@ -43,8 +43,8 @@ Percent_Com<-Year_Geom_Means/rowSums(Year_Geom_Means)
 
 
 #Figure 2####
-ColV2<-c("#253494","#fc4e2a","#4eb3d3")
-ColV2<-c(brewer.pal(3,"Dark2")[1:2],"#e425a7")
+ColV2<-c("navy","gold", "mediumaquamarine")
+
 
 colV<-c(rep(ColV2[1],9),rep(ColV2[2],5),rep(ColV2[3],23))
 colVseg<-c(rep(ColV2[1],9),rep(ColV2[2],4),NA,rep(ColV2[3],23))
