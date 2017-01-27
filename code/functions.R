@@ -908,3 +908,30 @@ dbFD_batch = function (x, a, w, w.abun = TRUE, stand.x = TRUE, ord = c("podani",
 }
 
 
+sum_traits_by_biomass = function(trait, trait_data, biomass_data, discrete=T){
+  years = as.numeric(rownames(biomass_data))
+  trait_vals = trait_data[match(colnames(biomass_data), rownames(trait_data)),trait]
+  n_years = length(years)
+  if(discrete){
+    trait_levels = as.character(unique(trait_vals))
+    n_traits = length(trait_levels)
+    output_data = data.frame(matrix(ncol = n_traits, nrow= n_years))
+    colnames(output_data) = c(trait_levels)
+    output_data$Year = years
+    for(i in 1:n_years){
+      for(j in 1:n_traits){
+        output_data[i,j] = sum(biomass_data[i,trait_vals==trait_levels[j]])
+      }
+      output_data[i,1:n_traits] = output_data[i,1:n_traits]/sum(output_data[i,1:n_traits])
+    }
+    output_data = gather_(output_data,key_col = "trait_value", value_col = "proportion",
+                          gather_cols = trait_levels)
+  }else {
+    output_data = data.frame(Year = years, value= rep(0, times= n_years))
+    for(i in 1:n_years){
+      output_data$value[i] = weighted.mean(trait_vals,w= biomass_data[i,])
+    }
+  }
+  return(output_data)
+}
+
