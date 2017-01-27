@@ -11,6 +11,7 @@ library(plotrix)
 require(FD)
 library(ggplot2)
 library(viridis)
+library(tidyr)
 
 
 source("code/functions.R")
