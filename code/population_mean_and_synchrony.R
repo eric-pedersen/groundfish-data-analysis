@@ -62,9 +62,9 @@ label.V<-1.2
 #Colour Vector
 ColV<-brewer.pal(9,"Set1")
 Eras<-c(1990,1995)
-top4_palette = c("#FF4040","#1F78B4","#33A02C",'#BF3EFF')
+top4_palette = c("#13ABDA", "#FFD578", "#D17634","#34A576")
 
-pdf("figures/Fig. 1 - 5yr.pdf", height=7,width=7)
+pdf("figures/Fig. 1.pdf", height=7,width=7)
 par(mfrow=c(3,1),mar=c(2,5,0,2),oma=c(3,1,1,1),las=1)
 plot(Total_Biomass$Bmass[1:14]~c(1981:1994),type='l',lty=1, lwd=2, ylab="Biomass (kg/tow)", xlab=NA,ylim=c(0,210),cex.lab=label.V,cex.axis=axis.V,xaxt='n',xlim=c(1981,2013))
 lines(Total_Biomass$Bmass[15:33]~c(1995:2013),lty=1, lwd=2)
@@ -102,7 +102,7 @@ lines(Year_Geom_Means$SEBASTES_MENTELLA[1:14]~c(1981:1994),col=top4_palette[4],l
 lines(Year_Geom_Means$SEBASTES_MENTELLA[15:33]~c(1995:2013),col=top4_palette[4],lwd=2)
 plotCI(c(1981:2013),Year_Geom_Means$SEBASTES_MENTELLA,uiw=Year_Geom_Means_SE$SEBASTES_MENTELLA,add=T, pch=NA,sfrac=0, col=top4_palette[4])
 abline(v=Eras, lwd=1,lty=2, col=8)
-legend("topright",legend = c("cod","halibut","plaice","redfish"),lwd=2,col=c("#E41A1C","#377EB8","#4DAF4A","#984EA3"),box.col="#FF003300",inset=0.005,cex=1.1)
+legend("topright",legend = c("cod","halibut","plaice","redfish"),lwd=2,col=top4_palette ,box.col="#FF003300",inset=0.005,cex=1.1)
 legend("topleft", "b",bty='n', cex=1.8, inset=c(-0.04,-0.025))
 
 phase<-cbind(Total_Biomass$Bmass[5:33]-Total_Biomass$Bmass[1:29],1985:2013)

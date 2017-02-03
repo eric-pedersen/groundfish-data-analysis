@@ -161,10 +161,9 @@ polygon_outline = unionSpatialPolygons(voronoi_shapes,
 polygon_outline = fortify(polygon_outline)  
 names(polygon_outline)[1:2] = c("LONG_DEC","LAT_DEC")
 
+cluster_palette = c("#FFCF4C", "#13ABDA", "#384A81", "#34A576", "#D17634","#6E2152","#A1D664") 
 
-cluster_palette=c("#1F78B4","#FF4040","#A6CEE3",'#BF3EFF',"#33A02C","#b2df8a",'#fdbf6f')
-species_palette = c("#FF4040","#1F78B4","#33A02C",'#BF3EFF')
-
+species_palette = c("#13ABDA", "#FFD578", "#D17634","#34A576")
 cluster_palette_top4 = c("#1F78B4", "#FF4040", "#33A02C", "#555555" )
 lat_long_labels = list(scale_x_continuous(breaks = c(-55,-50), 
                                           labels = c(expression(55*degree*0*minute*0*second*'W'),
@@ -208,7 +207,7 @@ polygon_remain_plot =polygon_plot +
 
 
 polygon_cod_plot=polygon_plot+
-  scale_fill_continuous(low="#ffffff",high="#e41a1c",guide="none",
+  scale_fill_continuous(low="#ffffff",high="#13ABDA",guide="none",
                         na.value="#aaaaaa")+
   geom_polygon(aes(group= polygon,fill= cod_percent,order=order))
 

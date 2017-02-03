@@ -57,7 +57,7 @@ label.V<-1.2
 #Colour Vector
 ColV<-brewer.pal(9,"Set1")
 Eras<-c(1990,1995)
-top4_palette = c("#FF4040","#1F78B4","#33A02C",'#BF3EFF')
+top4_palette = c("#13ABDA", "#FFD578", "#D17634","#34A576")
 
 
 pdf("Figures/Fig. 2.pdf", height=6,width=6)
@@ -110,7 +110,7 @@ axis(1,seq(1980,2010,by=5),cex=1.4,labels=F,tick=T)
 legend("topleft", "c", bty='n', cex=1.8,inset=c(-0.035,0))
 legend("topright",
        legend = c("cod","halibut","plaice","redfish"),
-       lwd=2,col=c("#E41A1C","#377EB8","#4DAF4A","#984EA3"),
+       lwd=2,col=top4_palette,
        box.col="#FF003300",inset=0.005,cex=0.85,ncol=2)
 dev.off()
 
