@@ -74,7 +74,7 @@ text(clust.tax[c(1,10,15,33),1]+c(0,0,0,0),clust.tax[c(1,10,15,33),2]+c(-0.04,0.
 axis(1,at=c(-0.3,0,0.3))
 axis(2,at=c(-0.3,0,0.3))
 legend("bottomright",paste("S = ",round(mds.tax$stress,digits=2)), bty='n', cex=1.2)
-legend("topleft", "a", bty='n', cex=1.8,inset=c(-0.15,0.04))
+legend("topleft", "A", bty='n', cex=1.8,inset=c(-0.15,0.04))
 
 
 ordiplot(mds.taxmin4,type="n",xlab="",ylab=NA,xlim=c(-0.4,0.4),ylim=c(-0.3,0.45),
@@ -90,7 +90,7 @@ axis(1,at=c(-0.3,0,0.3))
 axis(2,at=c(-0.3,0,0.3))
 text(clust.taxmin4[c(1,10,15,33),1]+c(0,0.07,0,-0.03), clust.taxmin4[c(1,10,15,33),2]+c(-0.08,-0.05,0.05,-0.05),rownames(Year_Geom_Means)[c(1,10,15,33)],cex=1,col=colV[c(1,10,15,33)])
 legend("bottomright",paste("S = ",round(mds.taxmin4 $stress,digits=2)), bty='n', cex=1.2)
-legend("topleft", "b", bty='n', cex=1.8,inset=c(-0.15,0.04))
+legend("topleft", "B", bty='n', cex=1.8,inset=c(-0.15,0.04))
 
 par(pty='m')
 plot(Percent_Com$GADUS_MORHUA*100~c(1981:2013),type='n',lwd=2, xaxs="i",yaxs="i",
@@ -107,7 +107,7 @@ polygon(c(1995,1995:2013,2013),c(0,(Percent_Com$REINHARDTIUS_HIPPOGLOSSOIDES+Per
 polygon(c(1995,1995:2013,2013),c(0,Percent_Com$GADUS_MORHUA[15:33]*100,0), col=top4_palette[1])
 abline(v=Eras, lwd=1,lty=2, col=8)
 axis(1,seq(1980,2010,by=5),cex=1.4,labels=F,tick=T)
-legend("topleft", "c", bty='n', cex=1.8,inset=c(-0.035,0))
+legend("topleft", "C", bty='n', cex=1.8,inset=c(-0.035,0))
 legend("topright",
        legend = c("cod","halibut","plaice","redfish"),
        lwd=2,col=top4_palette,

@@ -76,7 +76,7 @@ lines(c(1995:2013),Total_Biomass_rare$Bmass[15:33],type='l',lty=3, lwd=2, ylim=c
 abline(v=Eras, lwd=1,lty=2, col=8)
 legend("top",c("total community","non-commercial species"),
        lty=c(1,3),lwd=2,bty='o',bg="white",box.col="#FF003300",inset=0.005,cex=1.1)
-legend("topleft", "a",bty='n', cex=1.8, inset=c(-0.04,-0.025))
+legend("topleft", "A",bty='n', cex=1.8, inset=c(-0.04,-0.025))
 
 
 subplot({
@@ -103,7 +103,7 @@ lines(Year_Geom_Means$SEBASTES_MENTELLA[15:33]~c(1995:2013),col=top4_palette[4],
 plotCI(c(1981:2013),Year_Geom_Means$SEBASTES_MENTELLA,uiw=Year_Geom_Means_SE$SEBASTES_MENTELLA,add=T, pch=NA,sfrac=0, col=top4_palette[4])
 abline(v=Eras, lwd=1,lty=2, col=8)
 legend("topright",legend = c("cod","halibut","plaice","redfish"),lwd=2,col=top4_palette ,box.col="#FF003300",inset=0.005,cex=1.1)
-legend("topleft", "b",bty='n', cex=1.8, inset=c(-0.04,-0.025))
+legend("topleft", "B",bty='n', cex=1.8, inset=c(-0.04,-0.025))
 
 phase<-cbind(Total_Biomass$Bmass[5:33]-Total_Biomass$Bmass[1:29],1985:2013)
 grad.V<-rev(brewer.pal(9,"RdBu"))
@@ -131,5 +131,5 @@ points(sync_rare2[,"end"], sync_rare2[,"sync"], col="black", pch=21,
 axis(1,seq(1980,2010,by=5),cex=1.4,labels=F,tick=T)
 color.legend(1980.5,0.1,1982,0.8,legend=c("-","0","+"),rect.col= grad.V,gradient = "y",align="rb")
 mtext("Year",side=1,outer=T,line=1,  adj=0.525,cex=1)
-legend("topleft", "c",bty='n', cex=1.8, inset=c(-0.04,-0.025))
+legend("topleft", "C",bty='n', cex=1.8, inset=c(-0.04,-0.025))
 dev.off()
