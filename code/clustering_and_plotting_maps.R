@@ -261,7 +261,7 @@ pdf("figures/Fig. 4.pdf",width = 12,height = 7)
 }
 dev.off()
 
-#Figure S8 ####
-pdf("figures/Fig. S8.pdf", width= 12, height =3.33)
+#Figure S3 ####
+pdf("figures/Fig. S3.pdf", width= 12, height =3.33)
 print(polygon_cod_plot)
 dev.off()
