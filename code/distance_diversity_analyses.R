@@ -20,7 +20,7 @@ voronoi_data =read.csv("data/voronoi_data.csv",stringsAsFactors = F)
 com_dist = "bray" #uses Bray-Curtis dissimilarity
 geodesic_dist = T #Use geodesic distances for calculating inter-polygon distance
 boot_errors = T #Should jackknife se values be calculated?
-include_variance= F
+include_variance= T
 include_mean = F
 min_years_in_group = 30 
 #specifies how many years a polygon has to have observations in it for it to be used in the analysis
@@ -67,6 +67,10 @@ mean_dist_data = melt(mean_dist_data,measure.vars=c("sp_dist_scl","sp_nontop_dis
 div_dist_models = ddply(mean_dist_data,.(Year,community_subset), 
                         .fun=CalculateRSquareValues)
 
+mean_com_var = mean_dist_data %>%
+  group_by(Year, community_subset) %>% 
+  summarize(com_var = var(distance_scl))
+
 if(!include_mean){
   div_dist_models = subset(div_dist_models, coef!="Mean community distance")
 }
@@ -77,7 +81,7 @@ if(!include_variance){
 
 
 
-#Figure S2####
+#Figure 5####
 ComV<-c("sp_dist_scl","sp_nontop_dist_scl")
 
 axis.V<-1.1
@@ -87,8 +91,8 @@ label.V<-1.2
 ColV<-brewer.pal(9,"Set1")
 Eras<-c(1990,1995)
 
-pdf("Figures/Fig. S2.pdf", height=6,width=7)
-par(mfrow=c(2,1),mar=c(2,5,0,2),oma=c(3,1,1,1),las=1)
+pdf("Figures/Fig. 5.pdf", height=8,width=7)
+par(mfrow=c(3,1),mar=c(2,5,0,2),oma=c(3,1,1,1),las=1)
 plot(c(1981:2013),div_dist_models[div_dist_models$community_subset=="sp_dist_scl" & div_dist_models$coef=="Spatial Distance","R2_value"],type='n', ylab=expression(paste("Distance R"^"2")), ylim=c(0,0.3), xlab=NA,xaxt='n', cex.lab=label.V,cex.axis=axis.V, xlim=c(1981,2013))
 for(i in 1:3){
   plotCI(c(1981:2013),
@@ -113,6 +117,15 @@ for(i in 1:3){
 abline(v=Eras, lwd=1,lty=2, col=8)
 mtext("Year",side=1,outer=T,line=1,  adj=0.525,cex=1,padj=0)
 legend("topleft", "B",bty='n', cex=1.8, inset=c(-0.03,-0.025))
-dev.off()
 
+plot(c(1981:2013),div_dist_models[div_dist_models$community_subset=="sp_dist_scl" & div_dist_models$coef=="variance","R2_value"],type='n',ylim = c(0.9,4.55), ylab="total variance", cex.lab=label.V,cex.axis=axis.V, xlim=c(1980,2013),xlab="")
+for(i in 1:3){
+  plotCI(c(1981:2013),div_dist_models[div_dist_models$community_subset==ComV[i] & div_dist_models$coef=="variance","R2_value"],uiw=div_dist_models[div_dist_models$community_subset==ComV[i] & div_dist_models$coef=="variance","se"],pch=NA,slty=i,sfrac=0,add=T)
+  lines(c(1981:1994),div_dist_models[div_dist_models$community_subset==ComV[i] & div_dist_models$coef=="variance","R2_value"][1:14], lty=i, lwd=2)
+  lines(c(1995:2013),div_dist_models[div_dist_models$community_subset==ComV[i] & div_dist_models$coef=="variance","R2_value"][15:33], lty=i, lwd=2)
+}
+abline(v=Eras, lwd=1,lty=2, col=8)
+mtext("Year",side=1,outer=T,line=1,  adj=0.525,cex=1,padj=0)
+legend("topleft", "B",bty='n', cex=1.8, inset=c(-0.03,-0.025))
+dev.off()
 

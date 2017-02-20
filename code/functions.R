@@ -103,7 +103,7 @@ CalculateRSquareValues = function(x){
   if(boot_errors){
     
     R2_value = c(jack_mean_est,jack_var_est, jack_R_sqr_est)
-    output_data$se = c(jack_mean_se,jack_mean_se,jack_R_sqr_se)
+    output_data$se = c(jack_mean_se,jack_var_se,jack_R_sqr_se)
   }
   return(output_data)
 }
