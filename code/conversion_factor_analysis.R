@@ -8,7 +8,7 @@ library(class) #required for k-nearest neighbours matching
 library(mgcv)
 
 #Loading data and functions ####
-DFO_Dataset = read.csv("data/DFO_Dataset.csv",stringsAsFactors = F)
+DFO_Dataset = read.csv("data/DFO_SURVEYS_text_cleaner.csv",stringsAsFactors = F)#DFO Dataset
 
 # this function takes a specific data frame and an id vector specificing which
 # points should be in the pre- or post- data set. It then matches data points
@@ -53,7 +53,7 @@ gearchange_data = DFO_Dataset %>%
          long_scale = as.vector(scale(LONG_DEC, center=T,scale = T)),
          depth_scale = as.vector(scale(log10(Depth), center=T,scale=T)))%>%
   filter(Year %in%(1993:1996)) %>% 
-  select(Year,lat_scale,long_scale,depth_scale,ANARHICHAS_DENTICULATUS:UROPHYCIS_TENUIS)
+  select(Year,lat_scale,long_scale,depth_scale, ANARHICHAS_DENTICULATUS:UROPHYCIS_TENUIS)
 
 prechange_data = filter(gearchange_data,Year<1995)
 postchange_data = filter(gearchange_data, Year>=1995)
@@ -134,3 +134,12 @@ conv_agg_plot = ggplot(aes(x=species, y=exp(total_fit)),
   coord_flip()+
   labs(y= "conversion factor")+
   theme_bw() 
+
+conversion_factors = conv_fit_data %>%
+  select(species, total_fit)%>%
+  mutate(conversion = 1/exp(total_fit))%>%
+  select(-total_fit)
+
+
+
+write.csv(conversion_factors ,"data/conversion_factors.csv",row.names = F)
