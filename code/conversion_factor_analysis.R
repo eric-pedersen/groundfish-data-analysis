@@ -9,7 +9,50 @@ library(mgcv)
 library(ggplot2)
 
 #Loading data and functions ####
-DFO_Dataset = read.csv("data/DFO_SURVEYS_text_cleaner.csv",stringsAsFactors = F)#DFO Dataset
+DFO_Dataset_Init<-read.csv("data/DFO_SURVEYS_text_cleaner.csv")#DFO Dataset
+
+#Add 2013 data to the older dataset
+DFO_Dataset_2013<-read.csv("data/DFO_RV_Surveys_kg-per-tow_fish+shrimp+crab_Spring_Fall_2013.csv")
+DFO_Dataset<-rbind.fill(DFO_Dataset_Init,DFO_Dataset_2013)[,1:ncol(DFO_Dataset_Init)]
+
+#remove inverts
+DFO_Dataset <- DFO_Dataset[,colnames(DFO_Dataset) !="CHIONOECETES_OPILIO"]
+DFO_Dataset <- DFO_Dataset[,colnames(DFO_Dataset) !="PANDALUS_BOREALIS"]
+DFO_Dataset <- DFO_Dataset[,colnames(DFO_Dataset) !="PANDALUS_MONTAGUI"]
+DFO_Dataset <- DFO_Dataset[,colnames(DFO_Dataset) !="PANDALUS_PROPINQUUS"]
+
+
+#remove inshore samples
+DFO_Dataset<-DFO_Dataset[DFO_Dataset$Strata_Type!="InshoreNew",]
+DFO_Dataset<-DFO_Dataset[DFO_Dataset$Strata_Type!="InshoreOld",]
+DFO_Dataset$Strata_Type<-droplevels(DFO_Dataset$Strata_Type)
+
+#remove spring samples
+DFO_Dataset<-DFO_Dataset[DFO_Dataset$Season!="Spring",]
+DFO_Dataset$Season<-droplevels(DFO_Dataset$Season)
+
+#remove 3N and 3O
+DFO_Dataset<-DFO_Dataset[DFO_Dataset$DIV!="3N",]
+DFO_Dataset<-DFO_Dataset[DFO_Dataset$DIV!="3O",]
+DFO_Dataset<-DFO_Dataset[DFO_Dataset$DIV!="2H",]
+DFO_Dataset$DIV<-droplevels(DFO_Dataset$DIV)
+
+#Set all NA values for species abundances equal to zero
+DFO_Dataset[,31:ncol(DFO_Dataset)][is.na(DFO_Dataset[,31:ncol(DFO_Dataset)])] = 0
+
+#remove pre 1981 data####
+DFO_Dataset<-DFO_Dataset[DFO_Dataset$Year>=1981,]
+
+
+#List of column numbers of the comunity matrix, and names of species identified
+#as gear-sensitive.
+gear_sensitive_species<-c(1,2,3,7,8,9,10,11,12,14,15,16,20,22,25,28,30,31,32,33,
+                          34,39,40,42,47,54,55,56,57)
+gear_sensitive_species_names = names(DFO_Dataset[,31:89])[gear_sensitive_species]
+
+# Remove gear-sensitive species from the data
+DFO_Dataset = DFO_Dataset[,!names(DFO_Dataset)%in% gear_sensitive_species_names]
+
 
 # this function takes a specific data frame and an id vector specificing which
 # points should be in the pre- or post- data set. It then matches data points
@@ -96,7 +139,7 @@ conv_fit_data = conv_fit_data %>%
 
 # This arranges the data by corrected conversion factor
 conv_fit_data = conv_fit_data %>%
-  arrange(total_fit)%>%
+  arrange(gearchange_fit)%>%
   mutate(species= factor(species, levels = species))
 
 conv_gearchange_plot = ggplot(aes(x=species, y=exp(gearchange_fit)), data=conv_fit_data)+
