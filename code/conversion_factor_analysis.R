@@ -6,6 +6,7 @@ library(dplyr)
 library(tidyr)
 library(class) #required for k-nearest neighbours matching
 library(mgcv)
+library(ggplot2)
 
 #Loading data and functions ####
 DFO_Dataset = read.csv("data/DFO_SURVEYS_text_cleaner.csv",stringsAsFactors = F)#DFO Dataset
@@ -64,6 +65,9 @@ postchange_data = filter(gearchange_data, Year>=1995)
 gearchange_conv = find_matched_species(gearchange_data, gearchange_data$Year>1994)
 prechange_conv = find_matched_species(prechange_data, prechange_data$Year==1994)
 postchange_conv = find_matched_species(postchange_data, postchange_data$Year==1996)                                      
+
+gearchange_conv = gearchange_conv %>%
+  filter(test_density>0|train_density>0)
 
 # Mixed effect models of the gear change and the before and after changes
 conv_gearchange_model = gam(conv_factor~s(species,bs="re"),data= gearchange_conv)
@@ -136,9 +140,9 @@ conv_agg_plot = ggplot(aes(x=species, y=exp(total_fit)),
   theme_bw() 
 
 conversion_factors = conv_fit_data %>%
-  select(species, total_fit)%>%
-  mutate(conversion = 1/exp(total_fit))%>%
-  select(-total_fit)
+  select(species, gearchange_fit)%>%
+  mutate(conversion = 1/exp(gearchange_fit))%>%
+  select(-gearchange_fit)
 
 
 
