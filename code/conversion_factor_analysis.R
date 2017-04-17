@@ -5,6 +5,7 @@ rm(list=ls(all=TRUE))
 library(dplyr)
 library(tidyr)
 library(class) #required for k-nearest neighbours matching
+library(stringr)
 library(mgcv)
 library(ggplot2)
 
@@ -139,17 +140,25 @@ conv_fit_data = conv_fit_data %>%
 
 # This arranges the data by corrected conversion factor
 conv_fit_data = conv_fit_data %>%
+  mutate(species = str_to_title(species),
+         species = str_replace(species,"_", " "))%>%
   arrange(gearchange_fit)%>%
-  mutate(species= factor(species, levels = species))
+  mutate(species= factor(species, levels = species),
+         top4 = ifelse(species%in% c("Sebastes mentella", "Gadus morhua",
+                                     "Reinhardtius hippoglossoides",
+                                     "Hippoglossoides platessoides"), 1, 0))
 
-conv_gearchange_plot = ggplot(aes(x=species, y=exp(gearchange_fit)), data=conv_fit_data)+
+conv_gearchange_plot = ggplot(aes(x=species, y=exp(gearchange_fit),
+                                  color= factor(top4)), data=conv_fit_data)+
   geom_point()+
+  scale_color_manual(values = c("black","red"))+
   geom_hline(yintercept = 1)+
   geom_linerange(aes(ymin = exp(gearchange_fit-2*gearchange_se), 
                      ymax= exp(gearchange_fit+2*gearchange_se)))+
   coord_flip()+
   labs(y= "conversion factor")+
-  theme_bw() 
+  theme_bw()+
+  theme(axis.text.y = element_text(face="italic"), legend.position = "none")
 
 
 conv_prechange_plot = ggplot(aes(x=species, y=exp(prechange_fit)), data=conv_fit_data)+
@@ -190,3 +199,5 @@ conversion_factors = conv_fit_data %>%
 
 
 write.csv(conversion_factors ,"data/conversion_factors.csv",row.names = F)
+ggsave(filename = "figures/S0 Gearchange conversion estimates.png",
+       plot = conv_gearchange_plot, width = 6, height = 8, units="in", dpi=400)
