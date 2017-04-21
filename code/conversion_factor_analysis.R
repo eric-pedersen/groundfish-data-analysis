@@ -2,6 +2,7 @@
 rm(list=ls(all=TRUE))
 
 #Packages####
+library(plyr)
 library(dplyr)
 library(tidyr)
 library(class) #required for k-nearest neighbours matching
@@ -140,15 +141,15 @@ conv_fit_data = conv_fit_data %>%
 
 # This arranges the data by corrected conversion factor
 conv_fit_data = conv_fit_data %>%
-  mutate(species = str_to_title(species),
-         species = str_replace(species,"_", " "))%>%
+  mutate(species_label = str_to_title(species),
+         species_label = str_replace(species_label,"_", " "))%>%
   arrange(gearchange_fit)%>%
-  mutate(species= factor(species, levels = species),
-         top4 = ifelse(species%in% c("Sebastes mentella", "Gadus morhua",
+  mutate(species_label = factor(species_label, levels = species_label),
+         top4 = ifelse(species_label%in% c("Sebastes mentella", "Gadus morhua",
                                      "Reinhardtius hippoglossoides",
                                      "Hippoglossoides platessoides"), 1, 0))
 
-conv_gearchange_plot = ggplot(aes(x=species, y=exp(gearchange_fit),
+conv_gearchange_plot = ggplot(aes(x=species_label, y=exp(gearchange_fit),
                                   color= factor(top4)), data=conv_fit_data)+
   geom_point()+
   scale_color_manual(values = c("black","red"))+
@@ -158,7 +159,9 @@ conv_gearchange_plot = ggplot(aes(x=species, y=exp(gearchange_fit),
   coord_flip()+
   labs(y= "conversion factor")+
   theme_bw()+
-  theme(axis.text.y = element_text(face="italic"), legend.position = "none")
+  theme(axis.text.y = element_text(face="italic"), legend.position = "none",
+        axis.title.y = element_blank())+
+  scale_y_log10()
 
 
 conv_prechange_plot = ggplot(aes(x=species, y=exp(prechange_fit)), data=conv_fit_data)+
