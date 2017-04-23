@@ -6,8 +6,8 @@ library(stringr)
 #fishing data was obtained from "https://www.nafo.int/Data/STATLANT" (the NAFO
 # STATLANT 21A Data Extraction Tool). Search parameters were for all species and 
 # all countries' catches for all years in divisions 2J, 3K, and 3L.
-fishing_data = read_csv("data/STATLANT21A_Extraction.csv",skip=10)
-fishing_data = fishing_data %>%
+catch_data = read_csv("data/STATLANT21A_Extraction.csv",skip=10)
+catch_data = catch_data %>%
   transmute(year =Year, country=Country, species =Species, catch= `Catch ('000 Kg)`)%>%
   filter(year>1980)%>%
   group_by(species,year)%>%
@@ -37,10 +37,10 @@ invertebrates = c("(northern) Shortfin Squid", "American Lobster", "Whelks (ns)"
                   "Sea Scallop","Surf Clam" )
 
 #test if all species are in one of these lists
-assert_that(all(c(benthic_fish,pelagic_fish, invertebrates)%in%unique(fishing_data$species)))
-assert_that(all(unique(fishing_data$species)%in%c(benthic_fish,pelagic_fish, invertebrates)))
+assert_that(all(c(benthic_fish,pelagic_fish, invertebrates)%in%unique(catch_data$species)))
+assert_that(all(unique(catch_data$species)%in%c(benthic_fish,pelagic_fish, invertebrates)))
 
-fishing_summary = fishing_data %>%
+catch_summary = catch_data %>%
   mutate(type = ifelse(species%in%benthic_fish, "benthic",
                        ifelse(species%in%pelagic_fish, "pelagic", "invertebrate")))%>%
   group_by(year,type)%>%
@@ -49,19 +49,20 @@ fishing_summary = fishing_data %>%
 
 # Catch effort data ####
 # data is from NAFO catch effort time series 21B, downloaded from: https://www.nafo.int/Data/Catch-Statistics
-nafo_effort_1980 = read_csv("data/NAFO effort data/NAFO21B-80-89.txt")
-nafo_effort_1990 = read_csv("data/NAFO effort data/NAFO21B-90-99.txt")
-nafo_effort_2000 = read_csv("data/NAFO effort data/NAFO21B-2000-09.txt")%>%
+effort_1980 = read_csv("data/NAFO effort data/NAFO21B-80-89.txt")
+effort_1990 = read_csv("data/NAFO effort data/NAFO21B-90-99.txt")
+effort_2000 = read_csv("data/NAFO effort data/NAFO21B-2000-09.txt")%>%
   rename(Catches = Month_NK) #fixing an inconsistency between time series column names
-nafo_effort_2010 = read_csv("data/NAFO effort data/NAFO21B-2010-14.csv")%>%
+effort_2010 = read_csv("data/NAFO effort data/NAFO21B-2010-14.csv")%>%
   rename(Catches = Month_NK,GearCode = Gear,Divcode = AreaCode,Code = SpeciesEffort)
-assert_that(all(names(nafo_effort_1980)==names(nafo_effort_1990)))
-assert_that(all(names(nafo_effort_1980)==names(nafo_effort_2000)))
-assert_that(all(names(nafo_effort_1980)==names(nafo_effort_2010)))
+assert_that(all(names(effort_1980)==names(effort_1990)))
+assert_that(all(names(effort_1980)==names(effort_2000)))
+assert_that(all(names(effort_1980)==names(effort_2010)))
 
-nafo_effort_all = rbind(nafo_effort_1980,nafo_effort_1990, nafo_effort_2000,nafo_effort_2010)%>%
+effort_all = rbind(effort_1980,effort_1990, effort_2000,effort_2010)%>%
+  rename(year = Year)%>%
   filter(Divcode %in%c(23,31,32),#filter only for 2J,3K,3L
-         between(Year, 1981,2013), #filter for only those years in the data set
+         between(year, 1981,2013), #filter for only those years in the data set
          Code == 2 #filter only effort measured in days
          )%>%
   rowwise()%>%
@@ -73,14 +74,21 @@ nafo_effort_all = rbind(nafo_effort_1980,nafo_effort_1990, nafo_effort_2000,nafo
          total_days = sum(Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep,Oct, Nov,Dec),
          effort = tonne_mean*total_days,
          type = ifelse(MainSpecies%in% c(1,2,3,6,10, 11,12,13,14,16,19,22, 29,54,59),
-                        "benthic_fish",
+                        "benthic",
                         ifelse(MainSpecies%in% c(20,21,30,31,41, 42, 49, 52,53,99),
-                               "pelagic_fish", "invertebrates"))
+                               "pelagic", "invertebrate"))
          )
 
 effort_summary = effort_all %>%
   group_by(year, type)%>%
   summarize(effort= sum(effort,na.rm = T))
+
+
+fishing_summary = effort_summary %>%
+  left_join(catch_summary)
+fishing_summary_long = fishing_summary%>%
+  gather(driver, value,-type,-year)
+
 
 
 # Climate data ####
