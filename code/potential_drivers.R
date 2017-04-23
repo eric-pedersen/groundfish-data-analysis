@@ -1,6 +1,8 @@
 library(assertthat)
 library(dplyr)
 library(readr)
+library(tidyr)
+library(stringr)
 #fishing data was obtained from "https://www.nafo.int/Data/STATLANT" (the NAFO
 # STATLANT 21A Data Extraction Tool). Search parameters were for all species and 
 # all countries' catches for all years in divisions 2J, 3K, and 3L.
@@ -76,7 +78,69 @@ nafo_effort_all = rbind(nafo_effort_1980,nafo_effort_1990, nafo_effort_2000,nafo
                                "pelagic_fish", "invertebrates"))
          )
 
-nafo_effort_summary = nafo_effort_all %>%
-  group_by(Year, type)%>%
+effort_summary = effort_all %>%
+  group_by(year, type)%>%
   summarize(effort= sum(effort,na.rm = T))
 
+
+# Climate data ####
+dfo_data = read_csv("data/DFO_Dataset.csv")
+
+biomass_data  = dfo_data %>%
+  rename(year =Year)%>%
+  group_by(year)%>%
+  summarise(biomass = mean(Total))
+
+temperature_data = dfo_data %>%
+  filter(Season!="Spring", Month %in%c(10,11,12),
+         !is.na(Depth), !is.na(Temp_at_fishing))%>%
+  select(Year, Month,Depth, Temp_at_fishing)%>%
+  rename(year=Year, month=Month)%>%
+  group_by(year)%>%
+  summarise(temperature = mean(Temp_at_fishing,na.rm = T))
+
+# AMO time series from: https://www.esrl.noaa.gov/psd/data/timeseries/AMO/
+# I downloaded the "AMO smoothed, short (1948 to present)" series
+amo_data = read_fwf("data/amon.us.data",
+                    col_positions = fwf_positions(start = c(2,seq(9,108,by=9)),
+                                                  end   = c(5,seq(14,113, by=9)),
+                    col_names =c("year", 1:12)),skip = 1,n_max = 66)%>%
+  filter(between(year, 1971, 2013))%>%
+  gather(month, amo,-year)%>%
+  mutate(month=as.numeric(month))%>%
+  arrange(year,month)%>%
+  mutate(amo_sum = cumsum(amo))%>%
+  group_by(year)%>%
+  summarise(amo =mean(amo),amo_sum = last(amo_sum))
+
+ao_data = read_csv("data/ao_data.csv",skip = 1)%>%
+  mutate(year = str_sub(Date, 1,4),
+         year = as.numeric(year),
+         month = as.numeric(str_sub(Date,5,-1)))%>%
+  filter(between(year,1971,2013))%>%
+  arrange(year,month)%>%
+  mutate(ao_sum = cumsum(Value))%>%
+  group_by(year)%>%
+  summarize(ao = mean(Value),
+            ao_sum = last(ao_sum))
+
+# NAO time series downloaded from ftp://ftp.cpc.ncep.noaa.gov/wd52dg/data/indices/nao_index.tim
+# found via this website: http://www.cpc.ncep.noaa.gov/data/teledoc/nao.shtml
+nao_data =read_fwf("data/nao_index.tim",skip=9, 
+                   col_positions = fwf_positions(start=c(1,8,12),
+                                                 end = c(4,9,16),
+                                                 col_names =c("year","month", "nao")))%>%
+  filter(between(year, 1971,2013))%>%
+  arrange(year, month)%>%
+  mutate(nao_sum = cumsum(nao))%>%
+  group_by(year)%>%
+  summarise(nao = mean(nao),nao_sum = last(nao_sum))
+
+climate_data = nao_data %>%
+  left_join(ao_data)%>%
+  left_join(amo_data)%>%
+  left_join(temperature_data)%>%
+  left_join(biomass_data)
+
+climate_data_long =climate_data%>%
+  gather(index, value,-year, -biomass)
