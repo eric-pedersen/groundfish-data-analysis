@@ -7,6 +7,7 @@ library(vegan)
 library(lme4)
 library(ggplot2)
 library(broom)
+library(RcppRoll)
 
 rm(list = ls())
 #fishing data was obtained from "https://www.nafo.int/Data/STATLANT" (the NAFO
@@ -122,9 +123,9 @@ amo_data = read_fwf("data/amon.us.data",
   gather(month, amo,-year)%>%
   mutate(month=as.numeric(month))%>%
   arrange(year,month)%>%
-  mutate(amo_sum = cumsum(amo))%>%
   group_by(year)%>%
-  summarise(amo =mean(amo),amo_sum = last(amo_sum))
+  summarise(amo =mean(amo))%>%
+  mutate(amo_mean = roll_mean(amo,n=5, align = "right",fill = NA))
 
 ao_data = read_csv("data/ao_data.csv",skip = 1)%>%
   mutate(year = str_sub(Date, 1,4),
@@ -132,10 +133,10 @@ ao_data = read_csv("data/ao_data.csv",skip = 1)%>%
          month = as.numeric(str_sub(Date,5,-1)))%>%
   filter(between(year,1971,2013))%>%
   arrange(year,month)%>%
-  mutate(ao_sum = cumsum(Value))%>%
   group_by(year)%>%
-  summarize(ao = mean(Value),
-            ao_sum = last(ao_sum))
+  summarize(ao = mean(Value))%>%
+  mutate(ao_mean = roll_mean(ao,n=5, align = "right",fill = NA))
+
 
 # NAO time series downloaded from ftp://ftp.cpc.ncep.noaa.gov/wd52dg/data/indices/nao_index.tim
 # found via this website: http://www.cpc.ncep.noaa.gov/data/teledoc/nao.shtml
@@ -145,9 +146,10 @@ nao_data =read_fwf("data/nao_index.tim",skip=9,
                                                  col_names =c("year","month", "nao")))%>%
   filter(between(year, 1971,2013))%>%
   arrange(year, month)%>%
-  mutate(nao_sum = cumsum(nao))%>%
   group_by(year)%>%
-  summarise(nao = mean(nao),nao_sum = last(nao_sum))
+  summarise(nao = mean(nao))%>%
+  mutate(nao_mean = roll_mean(nao,n=5, align = "right",fill = NA))
+
 
 climate_data = nao_data %>%
   left_join(ao_data)%>%
@@ -164,12 +166,12 @@ climate_data$pc2 = climate_princomp$scores[,2]
 climate_data_long =climate_data%>%
   select(-pc1,-pc2)%>%
   gather(index, value,-year)%>%
-  mutate(index = recode(index,nao_sum = "NAO (cumulative)",
-                        ao_sum = "AO (cumulative)",
-                        amo_sum = "AMO (cumulative)",
+  mutate(index = recode(index,nao_mean = "NAO (5-year avg)",
+                        ao_mean = "AO (5-year avg)",
+                        amo_mean = "AMO (5-year avg)",
                         temperature = "mean bottom\ntemperature (C)"),
-         index = factor(index, levels = c("NAO (cumulative)","AO (cumulative)",
-                                          "AMO (cumulative)","mean bottom\ntemperature (C)")))
+         index = factor(index, levels = c("NAO (5-year avg)","AO (5-year avg)",
+                                          "AMO (5-year avg)","mean bottom\ntemperature (C)")))
 
 
 climate_plot = ggplot(data=climate_data_long, aes(x= year, value))+
