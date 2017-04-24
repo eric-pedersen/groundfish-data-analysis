@@ -119,7 +119,7 @@ amo_data = read_fwf("data/amon.us.data",
                     col_positions = fwf_positions(start = c(2,seq(9,108,by=9)),
                                                   end   = c(5,seq(14,113, by=9)),
                     col_names =c("year", 1:12)),skip = 1,n_max = 66)%>%
-  filter(between(year, 1971, 2013))%>%
+  filter(year<=2013)%>%
   gather(month, amo,-year)%>%
   mutate(month=as.numeric(month))%>%
   arrange(year,month)%>%
@@ -131,7 +131,7 @@ ao_data = read_csv("data/ao_data.csv",skip = 1)%>%
   mutate(year = str_sub(Date, 1,4),
          year = as.numeric(year),
          month = as.numeric(str_sub(Date,5,-1)))%>%
-  filter(between(year,1971,2013))%>%
+  filter(year<=2013)%>%
   arrange(year,month)%>%
   group_by(year)%>%
   summarize(ao = mean(Value))%>%
@@ -144,7 +144,7 @@ nao_data =read_fwf("data/nao_index.tim",skip=9,
                    col_positions = fwf_positions(start=c(1,8,12),
                                                  end = c(4,9,16),
                                                  col_names =c("year","month", "nao")))%>%
-  filter(between(year, 1971,2013))%>%
+  filter(year<=2013)%>%
   arrange(year, month)%>%
   group_by(year)%>%
   summarise(nao = mean(nao))%>%
@@ -159,6 +159,7 @@ climate_data = nao_data %>%
   select(-nao, -ao,-amo)
 
 climate_princomp = princomp(select(climate_data,-year),cor = T)
+
 
 climate_data$pc1 = climate_princomp$scores[,1]
 climate_data$pc2 = climate_princomp$scores[,2]
