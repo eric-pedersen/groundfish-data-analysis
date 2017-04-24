@@ -3,6 +3,12 @@ library(dplyr)
 library(readr)
 library(tidyr)
 library(stringr)
+library(vegan)
+library(lme4)
+library(ggplot2)
+library(broom)
+
+rm(list = ls())
 #fishing data was obtained from "https://www.nafo.int/Data/STATLANT" (the NAFO
 # STATLANT 21A Data Extraction Tool). Search parameters were for all species and 
 # all countries' catches for all years in divisions 2J, 3K, and 3L.
@@ -89,15 +95,14 @@ fishing_summary = effort_summary %>%
 fishing_summary_long = fishing_summary%>%
   gather(driver, value,-type,-year)
 
+fishing_totals = fishing_summary %>%
+  group_by(year) %>%
+  summarize(effort= sum(effort), catch = sum(catch))
+
 
 
 # Climate data ####
 dfo_data = read_csv("data/DFO_Dataset.csv")
-
-biomass_data  = dfo_data %>%
-  rename(year =Year)%>%
-  group_by(year)%>%
-  summarise(biomass = mean(Total))
 
 temperature_data = dfo_data %>%
   filter(Season!="Spring", Month %in%c(10,11,12),
@@ -148,7 +153,67 @@ climate_data = nao_data %>%
   left_join(ao_data)%>%
   left_join(amo_data)%>%
   left_join(temperature_data)%>%
-  left_join(biomass_data)
+  filter(between(year, 1981,2013))
+
+climate_princomp = princomp(select(climate_data,-year),cor = T)
+
+climate_data$pc1 = climate_princomp$scores[,1]
+climate_data$pc2 = climate_princomp$scores[,2]
 
 climate_data_long =climate_data%>%
-  gather(index, value,-year, -biomass)
+  gather(index, value,-year)
+
+
+# Loading community composition data averaged over years
+load("data/year_geom_means.Rdata")
+
+community_mean_data = Year_Geom_Means
+community_mean_data$Total = rowSums(community_mean_data)
+community_mean_data$year = 1981:2013
+
+community_driver_data  = community_mean_data %>%
+  left_join(climate_data)%>%
+  ungroup()%>%
+  gather(species, biomass, ANARHICHAS_DENTICULATUS:UROPHYCIS_TENUIS)%>%
+  group_by(species)%>%
+  mutate(biomass_l = log10(biomass+0.01))%>%
+  mutate_all(.funs = funs(lag =lag))%>%
+  mutate(growth =biomass_l - biomass_l_lag)
+
+
+
+model_autocor = lmer(growth~biomass_l_lag+
+                 (1+biomass_l_lag|species),
+               data=community_driver_data,na.action = na.exclude)
+
+model_full = lmer(growth~biomass_l_lag+nao +ao+amo+temperature+
+                 (1+biomass_l_lag+nao+ao+amo+temperature|species),
+               data=community_driver_data,na.action = na.exclude)
+
+driver_model_coefs = tidy(model_full, effect= "ran_modes")%>%
+  rename(species= level)%>%
+  filter(!term=="(Intercept)")%>%
+  mutate(species =str_to_title(species),
+         species = str_replace(species, "_", " "))
+         
+species_order = driver_model_coefs%>%
+  filter(term =="biomass_l_lag")%>%
+  arrange(estimate)
+
+driver_model_coefs = driver_model_coefs%>%
+  mutate(species = factor(species, levels = species_order$species))
+
+ggplot(aes(species, estimate),data=driver_model_coefs)+
+  geom_point()+
+  facet_grid(.~term,scales = "free_x") +
+  coord_flip()+
+  geom_linerange(aes(ymin = estimate-2*std.error, ymax =estimate+2*std.error))+
+  geom_hline(yintercept = 0, lty=2)
+
+model_predict = community_driver_data%>%
+  ungroup()%>%
+  mutate(fit = 10^as.vector(predict(model_autocor)+biomass_l_lag))%>%
+  select(year, species, fit)%>%
+  arrange(year)%>%
+  spread(species, fit)%>%
+  select(-year)
