@@ -153,7 +153,8 @@ climate_data = nao_data %>%
   left_join(ao_data)%>%
   left_join(amo_data)%>%
   left_join(temperature_data)%>%
-  filter(between(year, 1981,2013))
+  filter(between(year, 1981,2013))%>%
+  select(-nao, -ao,-amo)
 
 climate_princomp = princomp(select(climate_data,-year),cor = T)
 
@@ -161,59 +162,37 @@ climate_data$pc1 = climate_princomp$scores[,1]
 climate_data$pc2 = climate_princomp$scores[,2]
 
 climate_data_long =climate_data%>%
-  gather(index, value,-year)
+  select(-pc1,-pc2)%>%
+  gather(index, value,-year)%>%
+  mutate(index = recode(index,nao_sum = "NAO (cumulative)",
+                        ao_sum = "AO (cumulative)",
+                        amo_sum = "AMO (cumulative)",
+                        temperature = "mean bottom\ntemperature (C)"),
+         index = factor(index, levels = c("NAO (cumulative)","AO (cumulative)",
+                                          "AMO (cumulative)","mean bottom\ntemperature (C)")))
 
 
-# Loading community composition data averaged over years
-load("data/year_geom_means.Rdata")
+climate_plot = ggplot(data=climate_data_long, aes(x= year, value))+
+  geom_point() +
+  geom_line()+ 
+  facet_grid(index~., scales="free_y")+
+  theme_bw()
 
-community_mean_data = Year_Geom_Means
-community_mean_data$Total = rowSums(community_mean_data)
-community_mean_data$year = 1981:2013
+climate_ord_plot = ggplot(data= climate_data, aes(x=pc1,y=pc2,label=year))+
+  geom_path()+
+  geom_text()+
+  labs(x = "Climate principal component 1",
+       y = "Climate principal component 2")+
+  theme_bw()
 
-community_driver_data  = community_mean_data %>%
-  left_join(climate_data)%>%
-  ungroup()%>%
-  gather(species, biomass, ANARHICHAS_DENTICULATUS:UROPHYCIS_TENUIS)%>%
-  group_by(species)%>%
-  mutate(biomass_l = log10(biomass+0.01))%>%
-  mutate_all(.funs = funs(lag =lag))%>%
-  mutate(growth =biomass_l - biomass_l_lag)
+fishing_plot = ggplot(data= fishing_summary_long, aes(x = year, y= value,color=type))+
+  geom_point() +
+  geom_line()+
+  scale_color_brewer(palette="Set1")+
+  facet_grid(driver~.,scales = "free_y")+
+  theme_bw()
 
 
-
-model_autocor = lmer(growth~biomass_l_lag+
-                 (1+biomass_l_lag|species),
-               data=community_driver_data,na.action = na.exclude)
-
-model_full = lmer(growth~biomass_l_lag+nao +ao+amo+temperature+
-                 (1+biomass_l_lag+nao+ao+amo+temperature|species),
-               data=community_driver_data,na.action = na.exclude)
-
-driver_model_coefs = tidy(model_full, effect= "ran_modes")%>%
-  rename(species= level)%>%
-  filter(!term=="(Intercept)")%>%
-  mutate(species =str_to_title(species),
-         species = str_replace(species, "_", " "))
-         
-species_order = driver_model_coefs%>%
-  filter(term =="biomass_l_lag")%>%
-  arrange(estimate)
-
-driver_model_coefs = driver_model_coefs%>%
-  mutate(species = factor(species, levels = species_order$species))
-
-ggplot(aes(species, estimate),data=driver_model_coefs)+
-  geom_point()+
-  facet_grid(.~term,scales = "free_x") +
-  coord_flip()+
-  geom_linerange(aes(ymin = estimate-2*std.error, ymax =estimate+2*std.error))+
-  geom_hline(yintercept = 0, lty=2)
-
-model_predict = community_driver_data%>%
-  ungroup()%>%
-  mutate(fit = 10^as.vector(predict(model_autocor)+biomass_l_lag))%>%
-  select(year, species, fit)%>%
-  arrange(year)%>%
-  spread(species, fit)%>%
-  select(-year)
+ggsave("figures/climate_ts.pdf",climate_plot, width= 6, height=8) 
+ggsave("figures/climate_ord.pdf",climate_ord_plot, width= 6, height=6) 
+ggsave("figures/fishing_ts.pdf", fishing_plot, width= 6, height=6)
