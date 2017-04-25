@@ -9,7 +9,12 @@ library(class) #required for k-nearest neighbours matching
 library(stringr)
 library(mgcv)
 library(ggplot2)
+library(bootstrap)
+library(RColorBrewer)
+library(plotrix)
+library(vegan)
 
+source("code/functions.R")
 #Loading data and functions ####
 DFO_Dataset_Init<-read.csv("data/DFO_SURVEYS_text_cleaner.csv")#DFO Dataset
 
@@ -204,3 +209,144 @@ conversion_factors = conv_fit_data %>%
 write.csv(conversion_factors ,"data/conversion_factors.csv",row.names = F)
 ggsave(filename = "figures/S0 Gearchange conversion estimates.png",
        plot = conv_gearchange_plot, width = 6, height = 8, units="in", dpi=400)
+
+load("data/year_geom_means.Rdata")
+
+Div<-DFO_Dataset$DIV
+Year<-factor(DFO_Dataset$Year,ordered=T)
+DFO_Dataset_conv = DFO_Dataset
+Year_Geom_Means_Conv = Year_Geom_Means
+Year_Geom_Means_rare_Conv = Year_Geom_Means_rare
+top4_sp = c("GADUS_MORHUA","SEBASTES_MENTELLA",
+            "REINHARDTIUS_HIPPOGLOSSOIDES", "HIPPOGLOSSOIDES_PLATESSOIDES")
+
+
+# re-creating figures with conversion factors
+for(i in conversion_factors$species){
+  if(i %in% names(DFO_Dataset_conv)){
+    convert =  conversion_factors$conversion[conversion_factors$species==i]
+    DFO_Dataset_conv[DFO_Dataset_conv$Year>1994, names(DFO_Dataset_conv)==i] = convert*DFO_Dataset_conv[DFO_Dataset_conv$Year>1994, names(DFO_Dataset_conv)==i]
+    Year_Geom_Means_Conv[(1981:2013)>1994, names(Year_Geom_Means_Conv)==i] = convert*Year_Geom_Means_Conv[(1981:2013)>1994, names(Year_Geom_Means_Conv)==i] 
+    if(!i%in% top4_sp){
+      Year_Geom_Means_rare_Conv[(1981:2013)>1994, names(Year_Geom_Means_rare_Conv)==i] = convert*Year_Geom_Means_rare_Conv[(1981:2013)>1994, names(Year_Geom_Means_rare_Conv)==i] 
+    }
+  }
+}
+
+DFO_Com_conv = DFO_Dataset_conv %>%
+  select(ANARHICHAS_DENTICULATUS:UROPHYCIS_TENUIS)
+
+
+
+#Calculating overall biomass taking conversion factors into account ####
+Total_Biomass<- ddply(DFO_Com_conv,.variables=.(Year),
+                      .fun=function(x){
+                        time_series = rowSums(x)
+                        jack<-jackknife(time_series,CalcZeroInfGeomDens)
+                        return(data.frame(Bmass=mean(jack$jack.values),jack.se=jack$jack.se))
+                      })
+
+
+Total_Biomass_rare<- ddply(DFO_Com_conv[,!names(DFO_Com_conv)%in%top4_sp],
+                           .variables=.(Year),
+                           .fun=function(x){
+                             time_series = rowSums(x)
+                             jack<-jackknife(time_series,CalcZeroInfGeomDens)
+                             return(data.frame(Bmass=mean(jack$jack.values),jack.se=jack$jack.se))
+                           })
+
+
+
+# Calculating new NMDS scores for all and rare taxa with conversion factors ####
+#NMDS Calculations####
+#taxonomy
+# Calculate Bray Curtis dissimilarity, perform NMDS, record site scores
+# All spp
+diss.tax<-vegdist(decostand(Year_Geom_Means_Conv,"total"),"bray")
+mds.tax<-metaMDS(diss.tax) #3D : k=3
+clust.tax<-scores(mds.tax,display="sites",scaling=1)
+
+# Minus 4 spp
+diss.taxmin4<-vegdist(decostand(Year_Geom_Means_rare_Conv,"total"),"bray")
+mds.taxmin4<-metaMDS(diss.taxmin4) #3D : k=3
+clust.taxmin4<-scores(mds.taxmin4,display="sites",scaling=1)
+
+
+#Figure 1#####
+
+axis.V<-1.1
+label.V<-1.2
+
+#Colour Vector
+ColV<-brewer.pal(9,"Set1")
+Eras<-c(1990,1995)
+top4_palette = c("#13ABDA", "#FFD578", "#D17634","#34A576")
+
+#Figure 2####
+ColV2<-c("navy","gold", "mediumaquamarine")
+colV<-c(rep(ColV2[1],9),rep(ColV2[2],5),rep(ColV2[3],23))
+colVseg<-c(rep(ColV2[1],9),rep(ColV2[2],4),NA,rep(ColV2[3],23))
+
+
+pdf("figures/conversion factor effects.pdf", height=9,width=8)
+par(mar=c(4,4,1,1),oma=c(2,2,2,2),las=1)
+layout(matrix(c(1,1,1,1,2,2,2,2, 3,4,3,4,3,4),7,2, byrow=T))
+plot(Total_Biomass$Bmass[1:14]~c(1981:1994),type='l',lty=1, lwd=2, ylab="Biomass (kg/tow)", xlab=NA,ylim=c(0,210),cex.lab=label.V,cex.axis=axis.V,xaxt='n',xlim=c(1981,2013))
+lines(Total_Biomass$Bmass[15:33]~c(1995:2013),lty=1, lwd=2)
+plotCI(c(1981:2013),Total_Biomass$Bmass,uiw=Total_Biomass$jack.se,add=T,pch=NA,sfrac=0)
+axis(1,seq(1980,2010,by=5),cex=1.4,labels=F,tick=T)
+plotCI(c(1981:2013),Total_Biomass_rare$Bmass,uiw=Total_Biomass_rare$jack.se,add=T,pch=NA,sfrac=0,lty=3)
+lines(c(1981:1994),Total_Biomass_rare$Bmass[1:14],type='l',lty=3, lwd=2, ylim=c(0,1))
+lines(c(1995:2013),Total_Biomass_rare$Bmass[15:33],type='l',lty=3, lwd=2, ylim=c(0,1))
+abline(v=Eras, lwd=1,lty=2, col=8)
+legend("top",c("total community","non-commercial species"),
+       lty=c(1,3),lwd=2,bty='o',bg="white",box.col="#FF003300",inset=0.005,cex=1.1)
+legend("topleft", "A",bty='n', cex=1.8, inset=c(-0.04,-0.025))
+
+
+
+plot(Year_Geom_Means_Conv$GADUS_MORHUA[1:14]~c(1981:1994),type='l',lwd=2, ylab="Biomass (kg/tow)", xlab=NA,col=top4_palette[1],cex.lab=label.V,cex.axis=axis.V,xaxt='n',ylim=c(0,33),xlim=c(1981,2013))
+lines(Year_Geom_Means_Conv$GADUS_MORHUA[15:33]~c(1995:2013),type='l',lwd=2,col=top4_palette[1])
+axis(1,seq(1980,2010,by=5),cex=1.4,labels=F,tick=T)
+lines(Year_Geom_Means_Conv$REINHARDTIUS_HIPPOGLOSSOIDES[1:14]~c(1981:1994),col=top4_palette[2],lwd=2)
+lines(Year_Geom_Means_Conv$REINHARDTIUS_HIPPOGLOSSOIDES[15:33]~c(1995:2013),col=top4_palette[2],lwd=2)
+lines(Year_Geom_Means_Conv$HIPPOGLOSSOIDES_PLATESSOIDES[1:14]~c(1981:1994),col=top4_palette[3],lwd=2)
+lines(Year_Geom_Means_Conv$HIPPOGLOSSOIDES_PLATESSOIDES[15:33]~c(1995:2013),col=top4_palette[3],lwd=2)
+lines(Year_Geom_Means_Conv$SEBASTES_MENTELLA[1:14]~c(1981:1994),col=top4_palette[4],lwd=2)
+lines(Year_Geom_Means_Conv$SEBASTES_MENTELLA[15:33]~c(1995:2013),col=top4_palette[4],lwd=2)
+abline(v=Eras, lwd=1,lty=2, col=8)
+legend("topright",legend = c("cod","halibut","plaice","redfish"),lwd=2,col=top4_palette ,box.col="#FF003300",inset=0.005,cex=1.1)
+legend("topleft", "B",bty='n', cex=1.8, inset=c(-0.04,-0.025))
+
+
+par(pty='s')
+# Taxonomy
+ordiplot(mds.tax,type="n",xlab="",ylab="NMDS 2",main="All species", cex.main=1,axes=F,frame=F,cex.lab=label.V, cex.axis=axis.V)
+points(clust.tax[,1],clust.tax[,2],pch=19,col= colV,cex=1)
+s<-seq(33);s<-s[-length(s)]
+segments(clust.tax[s,1],clust.tax[s,2],clust.tax[s+1,1],clust.tax[s+1,2],col=colVseg)
+segments(clust.tax[14,1],clust.tax[14,2],clust.tax[15,1],clust.tax[15,2], col=colV[14],lty=2)
+text(clust.tax[c(1,10,15,33),1]+c(0,0,0,0),clust.tax[c(1,10,15,33),2]+c(-0.04,0.05,0.04,0.04),rownames(Year_Geom_Means)[c(1,10,15,33)],cex=1,col=colV[c(1,10,15,33)])
+axis(1,at=c(-0.3,0,0.3))
+axis(2,at=c(-0.3,0,0.3))
+legend("bottomright",paste("S = ",round(mds.tax$stress,digits=2)), bty='n', cex=1.2)
+legend("topleft", "C", bty='n', cex=1.8,inset=c(0,0.04))
+
+
+ordiplot(mds.taxmin4,type="n",xlab="",ylab=NA,xlim=c(-0.4,0.4),ylim=c(-0.3,0.45),
+         main="Non-commercial species",cex.main=1,axes=F,frame=F,cex.lab=label.V,
+         cex.axis=axis.V)
+points(clust.taxmin4[,1],clust.taxmin4[,2],pch=19,col=colV,cex=1)
+segments(clust.taxmin4[s,1],clust.taxmin4[s,2],clust.taxmin4[s+1,1],
+         clust.taxmin4[s+1,2],col=colVseg)
+segments(clust.taxmin4[14,1],clust.taxmin4[14,2],
+         clust.taxmin4[15,1],clust.taxmin4[15,2], 
+         col=colV[14],lty=2)
+axis(1,at=c(-0.3,0,0.3))
+axis(2,at=c(-0.3,0,0.3))
+text(clust.taxmin4[c(1,10,15,33),1]+c(0,0.07,0,-0.03), clust.taxmin4[c(1,10,15,33),2]+c(-0.08,-0.05,0.05,-0.05),rownames(Year_Geom_Means)[c(1,10,15,33)],cex=1,col=colV[c(1,10,15,33)])
+legend("bottomright",paste("S = ",round(mds.taxmin4 $stress,digits=2)), bty='n', cex=1.2)
+legend("topleft", "D", bty='n', cex=1.8,inset=c(0,0.04))
+
+
+dev.off()

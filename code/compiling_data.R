@@ -65,16 +65,6 @@ gear_sensitive_species_names = names(DFO_Dataset[,31:89])[gear_sensitive_species
 # Remove gear-sensitive species from the data
 DFO_Dataset = DFO_Dataset[,!names(DFO_Dataset)%in% gear_sensitive_species_names]
 
-# Load conversion factors
-conversion_factors = read.csv("data/conversion_factors.csv")
-
-for(i in conversion_factors$species){
-  if(i %in% names(DFO_Dataset)){
-    convert =  conversion_factors$conversion[conversion_factors$species==i]
-    DFO_Dataset[DFO_Dataset$Year>1994, names(DFO_Dataset)==i] = convert*DFO_Dataset[DFO_Dataset$Year>1994, names(DFO_Dataset)==i]
-  }
-}
-
 #Subset community Matrix, selecting only species data
 DFO_Com<-DFO_Dataset[,31:ncol(DFO_Dataset)]
 
