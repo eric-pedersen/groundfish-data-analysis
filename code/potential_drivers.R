@@ -111,7 +111,10 @@ temperature_data = dfo_data %>%
   select(Year, Month,Depth, Temp_at_fishing)%>%
   rename(year=Year, month=Month)%>%
   group_by(year)%>%
-  summarise(temperature = mean(Temp_at_fishing,na.rm = T))
+  summarise(temperature = mean(Temp_at_fishing,na.rm = T))%>%
+  ungroup()%>%
+  mutate(temp_mean = ifelse(year<1986,cummean(temperature),
+                            roll_meanr(temperature,n = 5,align = "right")))
 
 # AMO time series from: https://www.esrl.noaa.gov/psd/data/timeseries/AMO/
 # I downloaded the "AMO smoothed, short (1948 to present)" series
@@ -156,7 +159,7 @@ climate_data = nao_data %>%
   left_join(amo_data)%>%
   left_join(temperature_data)%>%
   filter(between(year, 1981,2013))%>%
-  select(-nao, -ao,-amo)
+  select(-nao, -ao,-amo,-temperature)
 
 climate_princomp = princomp(select(climate_data,-year),cor = T)
 
@@ -170,9 +173,9 @@ climate_data_long =climate_data%>%
   mutate(index = recode(index,nao_mean = "NAO (5-year avg)",
                         ao_mean = "AO (5-year avg)",
                         amo_mean = "AMO (5-year avg)",
-                        temperature = "mean bottom\ntemperature (C)"),
+                        temp_mean = "mean bottom\ntemperature (C, 5-year avg)"),
          index = factor(index, levels = c("NAO (5-year avg)","AO (5-year avg)",
-                                          "AMO (5-year avg)","mean bottom\ntemperature (C)")))
+                                          "AMO (5-year avg)","mean bottom\ntemperature (C, 5-year avg)")))
 
 
 climate_plot = ggplot(data=climate_data_long, aes(x= year, value))+
