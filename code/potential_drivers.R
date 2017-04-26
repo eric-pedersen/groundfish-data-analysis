@@ -199,3 +199,6 @@ fishing_plot = ggplot(data= fishing_summary_long, aes(x = year, y= value,color=t
 ggsave("figures/climate_ts.pdf",climate_plot, width= 6, height=8) 
 ggsave("figures/climate_ord.pdf",climate_ord_plot, width= 6, height=6) 
 ggsave("figures/fishing_ts.pdf", fishing_plot, width= 6, height=6)
+
+write.csv(fishing_summary, "data/fishing_effort_data.csv",row.names = F)
+write.csv(climate_data, "data/climate_data.csv",row.names = F)
