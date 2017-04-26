@@ -205,3 +205,35 @@ ggsave("figures/fishing_ts.pdf", fishing_plot, width= 6, height=6)
 
 write.csv(fishing_summary, "data/fishing_effort_data.csv",row.names = F)
 write.csv(climate_data, "data/climate_data.csv",row.names = F)
+
+driver_data = data_frame(year=climate_data$year,
+                         `Benthic fishing effort\n(megatonne-days)`=fishing_summary$effort[fishing_summary$type=="benthic"]/1e6,
+                         `Bottom temperature\n(5-year running mean)`=climate_data$temp_mean,
+                         `Climate\n(first principle component)` = climate_data$pc1
+                    )
+
+driver_data = driver_data%>%
+  gather(index, value, -year)
+
+driver_labels = driver_data %>%
+  group_by(index)%>%
+  summarise(n=n())%>%
+  mutate(label =LETTERS[1:3],
+         year = 1981,
+         value = c(15, 2.5,3))
+
+driver_plot = ggplot(driver_data,aes(year, value)) + 
+  geom_line()+
+  geom_text(data =driver_labels,aes(label = label))+
+  facet_grid(index~.,scales = "free_y",switch = "y")+
+  theme_bw()+
+  labs(y=NULL)+
+  theme(strip.placement = "outside",strip.background = element_blank(),panel.grid = element_blank()
+          )
+  
+
+
+ggsave(filename = "figures/Fig. XX.pdf", driver_plot,height=8,width=5)
+
+
+

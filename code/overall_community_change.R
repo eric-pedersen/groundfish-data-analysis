@@ -75,17 +75,6 @@ Ref_fdis_rare_1981 = Func_Div$FDis_rare/Func_Div$FDis_rare[1]
 Ref_fdis_rare_1981 = (Ref_fdis_rare_1981 - min(Ref_fdis_rare_1981))/(Ref_fdis_rare_1981-min(Ref_fdis_rare_1981))[1]*100
 
 
-#scale potential driver data to 1981 as well####
-Ref_fishing_1981 = fishing_data$effort[fishing_data$type=="benthic"]
-Ref_fishing_1981 = Ref_fishing_1981/Ref_fishing_1981[1]
-Ref_fishing_1981 = Ref_fishing_1981 -min(Ref_fishing_1981)
-Ref_fishing_1981 = Ref_fishing_1981/Ref_fishing_1981[1]*100
-
-Ref_climate_1981 = sqrt((climate_data$pc1-climate_data$pc1[1])^2 + (climate_data$pc2-climate_data$pc2[1])^2)
-Ref_climate_1981 = max(Ref_climate_1981) - Ref_climate_1981
-Ref_climate_1981 = Ref_climate_1981/Ref_climate_1981[1]
-Ref_climate_1981 = Ref_climate_1981 - min(Ref_climate_1981)
-Ref_climate_1981 = Ref_climate_1981/Ref_climate_1981[1]*100
 
 #Figure 4####
 
@@ -97,8 +86,8 @@ cod_col ="#13ABDA"
 Eras<-c(1990,1995)
 
 
-pdf("Figures/Fig. 6.pdf",height=12,width=8)
-par(las=1, mfrow=c(2,1),pty='m')
+pdf("Figures/Fig. 6.pdf",height=6,width=8)
+par(las=1, mfrow=c(1,1),pty='m')
 plot(Ref_bmass_1981[1:14]~c(1981:1994), type='l', lwd=2, ylab="Scaled similarity to 1981", 
      xlab="Year",pch=19, xlim=c(1980,2014), ylim=c(0,120))
 lines(Ref_bmass_1981[15:33]~c(1995:2013), type='l',lwd=2, col=1, pch=19)
@@ -116,12 +105,7 @@ abline(v=c(1990,1995), lty=2)
 legend("bottomleft",legend=c("community biomass","cod biomass","community composition", "functional diversity"), 
        lwd=2,col=c(1,cod_col,"olivedrab3", "#FF4040"), bty='n')
 
-plot(Ref_climate_1981~c(1981:2013), type='l', lwd=2,lty=1,  
-     ylab="Scaled similarity to 1981", 
-     xlab="Year",pch=19, xlim=c(1980,2014), ylim=c(0,135))
-lines(Ref_fishing_1981~c(1981:2013), type='l',lty=2,lwd=2, col=1, pch=19)
-legend("bottomleft",legend=c("Climate state", "fishing pressure"), 
-       lwd=2,lty=c(1,2),bty='n')
+
 dev.off()
 
 
