@@ -162,7 +162,7 @@ conv_gearchange_plot = ggplot(aes(x=species_label, y=exp(gearchange_fit),
   geom_linerange(aes(ymin = exp(gearchange_fit-2*gearchange_se), 
                      ymax= exp(gearchange_fit+2*gearchange_se)))+
   coord_flip()+
-  labs(y= "conversion factor")+
+  labs(y= "Estimated conversion factor (q)")+
   theme_bw()+
   theme(axis.text.y = element_text(face="italic"), legend.position = "none",
         axis.title.y = element_blank())+
@@ -288,7 +288,7 @@ colV<-c(rep(ColV2[1],9),rep(ColV2[2],5),rep(ColV2[3],23))
 colVseg<-c(rep(ColV2[1],9),rep(ColV2[2],4),NA,rep(ColV2[3],23))
 
 
-pdf("figures/conversion factor effects.pdf", height=9,width=8)
+png("figures/conversion factor effects.png", height=9,width=8,units="in", res=400)
 par(mar=c(4,4,1,1),oma=c(2,2,2,2),las=1)
 layout(matrix(c(1,1,1,1,2,2,2,2, 3,4,3,4,3,4),7,2, byrow=T))
 plot(Total_Biomass$Bmass[1:14]~c(1981:1994),type='l',lty=1, lwd=2, ylab="Biomass (kg/tow)", xlab=NA,ylim=c(0,210),cex.lab=label.V,cex.axis=axis.V,xaxt='n',xlim=c(1981,2013))
