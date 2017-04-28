@@ -109,7 +109,7 @@ label.V<-1.2
 ColV<-brewer.pal(9,"Set1")
 Eras<-c(1990,1995)
 
-pdf("Figures/Fig. 5.pdf", height=6,width=6)
+pdf("Figures/Fig. 6.pdf", height=6,width=6)
 par(mfrow=c(2,1),mar=c(2,5,0,2),oma=c(3,1,1,1),las=1)
 plot(c(1981:2013),div_dist_models[div_dist_models$community_subset=="sp_dist_scl" & div_dist_models$coef=="Spatial Distance","R2_value"],type='n', ylab=expression(paste("Distance R"^"2")), ylim=c(0,0.3), xlab=NA,xaxt='n', cex.lab=label.V,cex.axis=axis.V, xlim=c(1981,2013))
 for(i in 1:3){

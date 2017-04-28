@@ -86,7 +86,7 @@ cod_col ="#13ABDA"
 Eras<-c(1990,1995)
 
 
-pdf("Figures/Fig. 6.pdf",height=6,width=8)
+pdf("Figures/Fig. 7.pdf",height=6,width=8)
 par(las=1, mfrow=c(1,1),pty='m')
 plot(Ref_bmass_1981[1:14]~c(1981:1994), type='l', lwd=2, ylab="Scaled similarity to 1981", 
      xlab="Year",pch=19, xlim=c(1980,2014), ylim=c(0,120))

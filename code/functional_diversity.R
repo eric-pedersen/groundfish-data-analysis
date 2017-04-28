@@ -144,7 +144,7 @@ trophic_rare_data = sum_traits_by_biomass("trophic.level",Traits,
 ColV<-brewer.pal(9,"Set1")
 Eras<-c(1990,1995)
 
-pdf("figures/Fig. 3.pdf",width=6, height=5)
+pdf("figures/Fig. 4.pdf",width=6, height=5)
 plot(Func_Div$FDis[1:14]~c(1981:1994), type='l', lwd=2, lty=1, 
      ylab="Functional dispersion (FDis)",
      xlab= NA,

@@ -254,7 +254,7 @@ comp_plot = ggplot(aes(x=cluster, y=proportion),
 
 
 #Figure 4####
-pdf("figures/Fig. 4.pdf",width = 12,height = 7)
+pdf("figures/Fig. 5.pdf",width = 12,height = 7)
 {
   PlotMultipleGgplotObjs(polygon_total_plot,depth_voronoi_plot, comp_plot, 
                          layout=matrix(c(1,1,1,2,3,3),nrow = 2,byrow = T))

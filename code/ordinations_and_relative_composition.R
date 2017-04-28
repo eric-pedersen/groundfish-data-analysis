@@ -60,7 +60,7 @@ Eras<-c(1990,1995)
 top4_palette = c("#13ABDA", "#FFD578", "#D17634","#34A576")
 
 
-pdf("Figures/Fig. 2.pdf", height=6,width=6)
+pdf("Figures/Fig. 3.pdf", height=6,width=6)
 par(mar=c(4,4,1,1),oma=c(2,2,2,2),las=1)
 layout(matrix(c(1,2,3,3),2,2, byrow=T))
 par(pty='s')
