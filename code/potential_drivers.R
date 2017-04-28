@@ -116,100 +116,22 @@ temperature_data = dfo_data %>%
   mutate(temp_mean = ifelse(year<1986,cummean(temperature),
                             roll_meanr(temperature,n = 5,align = "right")))
 
-# AMO time series from: https://www.esrl.noaa.gov/psd/data/timeseries/AMO/
-# I downloaded the "AMO smoothed, short (1948 to present)" series
-amo_data = read_fwf("data/amon.us.data",
-                    col_positions = fwf_positions(start = c(2,seq(9,108,by=9)),
-                                                  end   = c(5,seq(14,113, by=9)),
-                    col_names =c("year", 1:12)),skip = 1,n_max = 66)%>%
-  filter(year<=2013)%>%
-  gather(month, amo,-year)%>%
-  mutate(month=as.numeric(month))%>%
-  arrange(year,month)%>%
-  group_by(year)%>%
-  summarise(amo =mean(amo))%>%
-  mutate(amo_mean = roll_mean(amo,n=5, align = "right",fill = NA))
 
-ao_data = read_csv("data/ao_data.csv",skip = 1)%>%
-  mutate(year = str_sub(Date, 1,4),
-         year = as.numeric(year),
-         month = as.numeric(str_sub(Date,5,-1)))%>%
-  filter(year<=2013)%>%
-  arrange(year,month)%>%
-  group_by(year)%>%
-  summarize(ao = mean(Value))%>%
-  mutate(ao_mean = roll_mean(ao,n=5, align = "right",fill = NA))
+composite_index_data = read_csv("data/composite_index.csv")%>%
+  mutate(index_mean = roll_mean(climate_index,n=5,align = "right",fill=NA))%>%
+  filter(between(year, 1981,2013))
 
-
-# NAO time series downloaded from ftp://ftp.cpc.ncep.noaa.gov/wd52dg/data/indices/nao_index.tim
-# found via this website: http://www.cpc.ncep.noaa.gov/data/teledoc/nao.shtml
-nao_data =read_fwf("data/nao_index.tim",skip=9, 
-                   col_positions = fwf_positions(start=c(1,8,12),
-                                                 end = c(4,9,16),
-                                                 col_names =c("year","month", "nao")))%>%
-  filter(year<=2013)%>%
-  arrange(year, month)%>%
-  group_by(year)%>%
-  summarise(nao = mean(nao))%>%
-  mutate(nao_mean = roll_mean(nao,n=5, align = "right",fill = NA))
-
-
-climate_data = nao_data %>%
-  left_join(ao_data)%>%
-  left_join(amo_data)%>%
-  left_join(temperature_data)%>%
+climate_data = composite_index_data%>%
   filter(between(year, 1981,2013))%>%
-  select(-nao, -ao,-amo,-temperature)
+  select(year, index_mean)
 
-climate_princomp = princomp(select(climate_data,-year),cor = T)
-
-
-climate_data$pc1 = climate_princomp$scores[,1]
-climate_data$pc2 = climate_princomp$scores[,2]
-
-climate_data_long =climate_data%>%
-  select(-pc1,-pc2)%>%
-  gather(index, value,-year)%>%
-  mutate(index = recode(index,nao_mean = "NAO (5-year avg)",
-                        ao_mean = "AO (5-year avg)",
-                        amo_mean = "AMO (5-year avg)",
-                        temp_mean = "mean bottom\ntemperature (C, 5-year avg)"),
-         index = factor(index, levels = c("NAO (5-year avg)","AO (5-year avg)",
-                                          "AMO (5-year avg)","mean bottom\ntemperature (C, 5-year avg)")))
-
-
-climate_plot = ggplot(data=climate_data_long, aes(x= year, value))+
-  geom_point() +
-  geom_line()+ 
-  facet_grid(index~., scales="free_y")+
-  theme_bw()
-
-climate_ord_plot = ggplot(data= climate_data, aes(x=pc1,y=pc2,label=year))+
-  geom_path()+
-  geom_text()+
-  labs(x = "Climate principal component 1",
-       y = "Climate principal component 2")+
-  theme_bw()
-
-fishing_plot = ggplot(data= fishing_summary_long, aes(x = year, y= value,color=type))+
-  geom_point() +
-  geom_line()+
-  scale_color_brewer(palette="Set1")+
-  facet_grid(driver~.,scales = "free_y")+
-  theme_bw()
-
-
-ggsave("figures/climate_ts.pdf",climate_plot, width= 6, height=8) 
-ggsave("figures/climate_ord.pdf",climate_ord_plot, width= 6, height=6) 
-ggsave("figures/fishing_ts.pdf", fishing_plot, width= 6, height=6)
 
 write.csv(fishing_summary, "data/fishing_effort_data.csv",row.names = F)
 write.csv(climate_data, "data/climate_data.csv",row.names = F)
 
 driver_data = data_frame(year=climate_data$year,
                          `Benthic fishing effort\n(megatonne-days)`=fishing_summary$effort[fishing_summary$type=="benthic"]/1e6,
-                         `Bottom temperature\n(5-year running mean)`=climate_data$temp_mean,
-                         `Climate\n(first principle component)` = climate_data$pc1
+                         `Climate index\n(5-year running mean)` = climate_data$index_mean
                     )
 
 driver_data = driver_data%>%
@@ -218,9 +140,9 @@ driver_data = driver_data%>%
 driver_labels = driver_data %>%
   group_by(index)%>%
   summarise(n=n())%>%
-  mutate(label =LETTERS[1:3],
+  mutate(label =LETTERS[1:2],
          year = 1981,
-         value = c(15, 2.5,3))
+         value = c(15, 20))
 
 driver_plot = ggplot(driver_data,aes(year, value)) + 
   geom_line()+
@@ -233,7 +155,7 @@ driver_plot = ggplot(driver_data,aes(year, value)) +
   
 
 
-ggsave(filename = "figures/Fig. XX.pdf", driver_plot,height=8,width=5)
+ggsave(filename = "figures/Fig. 2.pdf", driver_plot,height=8,width=5)
 
 
 
