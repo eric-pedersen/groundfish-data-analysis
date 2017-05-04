@@ -3,6 +3,7 @@ rm(list=ls(all=TRUE))
 
 #Packages####
 library(plyr)
+library(FD)
 library(dplyr)
 library(tidyr)
 library(class) #required for k-nearest neighbours matching
@@ -272,6 +273,35 @@ mds.taxmin4<-metaMDS(diss.taxmin4) #3D : k=3
 clust.taxmin4<-scores(mds.taxmin4,display="sites",scaling=1)
 
 
+#Functional diversity analysis
+Trait_Match<-read.csv("data/Heike_Traits.csv",row.names=1)
+Traits<-Trait_Match[,c("vertical.position","Food.Items","double.time","length",
+                       "trophic.level","Aggregation")]
+
+Traits<-Trait_Match[match(names(DFO_Com_conv),Trait_Match$DFO_clean_2014_name),
+                    c("vertical.position","Food.Items","double.time","length",
+                      "trophic.level","Aggregation")]
+
+top4_index = match(top4_sp, names(DFO_Com_conv))
+row.names(Traits)<-names(DFO_Com_conv)
+
+
+# Calculate functional diversities ####
+#total community
+Func_Div<-dbFD_batch(Traits,Year_Geom_Means_Conv,w.abun=T,stand.x=T,
+                     calc.FGR=T,calc.FRic=F,
+                     stand.FRic=F,scale.RaoQ=F,calc.CWM=F,cut_type = "G",cut_val = 11)
+
+
+
+#remaining species
+Func_Div_rare<-dbFD_batch(Traits[-top4_index,],
+                          Year_Geom_Means_Conv[,-top4_index],
+                          w.abun=T,stand.x=T,calc.FGR=T,
+                          calc.FRic=F,stand.FRic=F,scale.RaoQ=F,calc.CWM=F,
+                          cut_type = "G",cut_val = 11)
+
+
 #Figure 1#####
 
 axis.V<-1.1
@@ -288,9 +318,9 @@ colV<-c(rep(ColV2[1],9),rep(ColV2[2],5),rep(ColV2[3],23))
 colVseg<-c(rep(ColV2[1],9),rep(ColV2[2],4),NA,rep(ColV2[3],23))
 
 
-png("figures/conversion factor effects.png", height=9,width=8,units="in", res=400)
+png("figures/conversion factor effects.png", height=8,width=12,units="in", res=400)
 par(mar=c(4,4,1,1),oma=c(2,2,2,2),las=1)
-layout(matrix(c(1,1,1,1,2,2,2,2, 3,4,3,4,3,4),7,2, byrow=T))
+layout(matrix(c(1,1,4,4,1,1,4,4,2,2,4,4,2,2,5,5,3,3,5,5,3,3,5,5),6,4, byrow=T))
 plot(Total_Biomass$Bmass[1:14]~c(1981:1994),type='l',lty=1, lwd=2, ylab="Biomass (kg/tow)", xlab=NA,ylim=c(0,210),cex.lab=label.V,cex.axis=axis.V,xaxt='n',xlim=c(1981,2013))
 lines(Total_Biomass$Bmass[15:33]~c(1995:2013),lty=1, lwd=2)
 plotCI(c(1981:2013),Total_Biomass$Bmass,uiw=Total_Biomass$jack.se,add=T,pch=NA,sfrac=0)
@@ -319,6 +349,16 @@ legend("topright",legend = c("cod","halibut","plaice","redfish"),lwd=2,col=top4_
 legend("topleft", "B",bty='n', cex=1.8, inset=c(-0.04,-0.025))
 
 
+plot(Func_Div$FDis[1:14]~c(1981:1994),type='l',lty=1, lwd=2, ylab="Functional diversity", 
+     xlab="Year",ylim=c(0.25,0.4),cex.lab=label.V,cex.axis=axis.V,xlim=c(1981,2013))
+lines(Func_Div$FDis[15:33]~c(1995:2013),lty=1, lwd=2)
+lines(c(1981:1994),Func_Div_rare$FDis[1:14],type='l',lty=3, lwd=2, ylim=c(0,1))
+lines(c(1995:2013),Func_Div_rare$FDis[15:33],type='l',lty=3, lwd=2, ylim=c(0,1))
+abline(v=Eras, lwd=1,lty=2, col=8)
+legend("topleft", "C",bty='n', cex=1.8, inset=c(-0.04,-0.025))
+
+
+
 par(pty='s')
 # Taxonomy
 ordiplot(mds.tax,type="n",xlab="",ylab="NMDS 2",main="All species", cex.main=1,axes=F,frame=F,cex.lab=label.V, cex.axis=axis.V)
@@ -330,7 +370,7 @@ text(clust.tax[c(1,10,15,33),1]+c(0,0,0,0),clust.tax[c(1,10,15,33),2]+c(-0.04,0.
 axis(1,at=c(-0.3,0,0.3))
 axis(2,at=c(-0.3,0,0.3))
 legend("bottomright",paste("S = ",round(mds.tax$stress,digits=2)), bty='n', cex=1.2)
-legend("topleft", "C", bty='n', cex=1.8,inset=c(0,0.04))
+legend("topleft", "D", bty='n', cex=1.8,inset=c(0,0.04))
 
 
 ordiplot(mds.taxmin4,type="n",xlab="",ylab=NA,xlim=c(-0.4,0.4),ylim=c(-0.3,0.45),
@@ -346,7 +386,7 @@ axis(1,at=c(-0.3,0,0.3))
 axis(2,at=c(-0.3,0,0.3))
 text(clust.taxmin4[c(1,10,15,33),1]+c(0,0.07,0,-0.03), clust.taxmin4[c(1,10,15,33),2]+c(-0.08,-0.05,0.05,-0.05),rownames(Year_Geom_Means)[c(1,10,15,33)],cex=1,col=colV[c(1,10,15,33)])
 legend("bottomright",paste("S = ",round(mds.taxmin4 $stress,digits=2)), bty='n', cex=1.2)
-legend("topleft", "D", bty='n', cex=1.8,inset=c(0,0.04))
+legend("topleft", "E", bty='n', cex=1.8,inset=c(0,0.04))
 
 
 dev.off()
