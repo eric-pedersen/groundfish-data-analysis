@@ -1,24 +1,7 @@
 # groundfish-data-analysis
 Code for analyzing groundfish data off newfoundland.
 
-Note: this code requires a cleaned community data file, available by request from Fisheries and Oceans Canada; contact Pierre Pepin (<pepinp@dfo-mpo.gc.ca>).
-
-
 ## To use this code
-
-Place the following data files in the data folder:
-
-1. DFO_SURVEYS_text_cleaner.csv
-2. DFO_RV_Surveys_kg-per-tow_fish+shrimp+crab_Spring_Fall_2013.csv
-3. Heike_Traits.csv
-4. voronoi_shapes.Rdat
-5. fishing_effort_data.csv
-6. composite_index.csv
-7. In a subfolder labelled "NAFO effort data":
-  * NAFO21B-80-89.txt
-  * NAFO21B-90-99.txt
-  * NAFO21B-2000-09.txt
-  * NAFO21B-2010-14.csv
 
 Ensure the working directory for R is set to the overall project folder
 
