@@ -151,7 +151,7 @@ plotCI(c(1981:2013),mean_diversity_data$div_rare_mean,
        uiw=mean_diversity_data$div_rare_sd,pch=NA,slty=2,sfrac=0,add=T)
 lines(c(1981:1994),mean_diversity_data$div_rare_mean[1:14], lty=2, lwd=2)
 lines(c(1995:2013),mean_diversity_data$div_rare_mean[15:33], lty=2, lwd=2)
-legend("topleft", "A",bty='n', cex=1.8, inset=c(-0.03,-0.025))
+legend("topleft", "(a)",bty='n', cex=1.8, inset=c(-0.03,-0.025))
 abline(v=Eras, lwd=1,lty=2, col=8)
 
 
@@ -163,7 +163,7 @@ for(i in 1:3){
 }
 abline(v=Eras, lwd=1,lty=2, col=8)
 mtext("Year",side=1,outer=T,line=1,  adj=0.525,cex=1,padj=0)
-legend("topleft", "B",bty='n', cex=1.8, inset=c(-0.03,-0.025))
+legend("topleft", "(b)",bty='n', cex=1.8, inset=c(-0.03,-0.025))
 
 
 plot(c(1981:2013),div_dist_models[div_dist_models$community_subset=="sp_dist_scl" & div_dist_models$coef=="variance","R2_value"],type='n',ylim = c(0.9,4.55), ylab="total variance", cex.lab=label.V,cex.axis=axis.V,xlab="", xlim=c(1980,2013))
@@ -174,7 +174,7 @@ for(i in 1:3){
 }
 abline(v=Eras, lwd=1,lty=2, col=8)
 mtext("Year",side=1,outer=T,line=1,  adj=0.525,cex=1,padj=0)
-legend("topleft", "C",bty='n', cex=1.8, inset=c(-0.03,-0.025))
+legend("topleft", "(c)",bty='n', cex=1.8, inset=c(-0.03,-0.025))
 legend(x="topright", legend=c("Total community","Noncommercial species"),
        col="black", lty=1:3,lwd=3,bty='n',box.col="#FF003300", cex=0.9)
 

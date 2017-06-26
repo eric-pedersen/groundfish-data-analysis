@@ -184,78 +184,37 @@ continuous_plot = list(aes(Year, value,
 agg_total_plot = ggplot(data= agg_total_data) + 
   discrete_plot+
   scale_color_viridis("Aggregation",discrete = T)+
-  annotate(geom="text",label = "A", x = 1982, y=0.9,size=5)
+  annotate(geom="text",label = "(a)", x = 1982, y=0.9,size=5)
 
 food_total_plot = ggplot(data= food_total_data) + 
   discrete_plot+
   scale_color_viridis("Food\nniche",discrete = T,option = "inferno")+
-  annotate(geom="text",label = "B", x = 1982, y=0.9,size=5)
+  annotate(geom="text",label = "(b)", x = 1982, y=0.9,size=5)
 
 vertical_total_plot = ggplot(data= vertical_total_data) + 
   discrete_plot+
   scale_color_viridis("Vertical\nposition",discrete = T,option = "plasma")+
-  annotate(geom="text",label = "C", x = 1982, y=0.9,size=5)
+  annotate(geom="text",label = "(c)", x = 1982, y=0.9,size=5)
 
 
 double_total_plot =  ggplot(data= double_total_data) + 
   continuous_plot+
   scale_y_continuous("Mean doubling time (years)")+
-  annotate(geom="text",label = "D", x = 1982, y=9.5,size=5)
+  annotate(geom="text",label = "(d)", x = 1982, y=9.5,size=5)
 
 trophic_total_plot =  ggplot(data= trophic_total_data) + 
   continuous_plot+
   scale_y_continuous("Mean trophic level")+
-  annotate(geom="text",label = "E", x = 1982, y=4.15,size=5)
+  annotate(geom="text",label = "(e)", x = 1982, y=4.15,size=5)
 
 length_total_plot =  ggplot(data= length_total_data) + 
   continuous_plot+
   scale_y_continuous("Mean maximum body length (cm)")+
-  annotate(geom="text",label = "F", x = 1982, y=140,size=5)
+  annotate(geom="text",label = "(f)", x = 1982, y=140,size=5)
 
-pdf("figures/Fig. S2.pdf",width=12, height=6)
+png("figures/Fig. S2.png",width=12, height=6,units="in",res = 400 )
 
 PlotMultipleGgplotObjs(agg_total_plot, food_total_plot, vertical_total_plot, double_total_plot,trophic_total_plot,length_total_plot,
                        layout = matrix(c(1:3,1:3, 1:3, 4:6,4:6),ncol = 3,byrow = T))
 dev.off()
 
-
-#Plotting mean trait values for the rare species community ####
-
-agg_rare_plot = ggplot(data= agg_rare_data) + 
-  discrete_plot+
-  scale_color_viridis("Aggregation",discrete = T)+
-  annotate(geom="text",label = "A", x = 1982, y=0.9,size=5)
-
-food_rare_plot = ggplot(data= food_rare_data) + 
-  discrete_plot+
-  scale_color_viridis("Food\nniche",discrete = T,option = "inferno")+
-  annotate(geom="text",label = "B", x = 1982, y=0.9,size=5)
-
-vertical_rare_plot = ggplot(data= vertical_rare_data) + 
-  discrete_plot+
-  scale_color_viridis("Vertical\nposition",discrete = T,option = "plasma")+
-  annotate(geom="text",label = "C", x = 1982, y=0.9,size=5)
-
-
-double_rare_plot =  ggplot(data= double_rare_data) + 
-  continuous_plot+
-  scale_y_continuous("Mean doubling time (years)", 
-                     limits = range(double_total_data$value))+
-  annotate(geom="text",label = "D", x = 1982, y=9.5,size=5)
-
-trophic_rare_plot =  ggplot(data= trophic_rare_data) + 
-  continuous_plot+
-  scale_y_continuous("Mean trophic level")+
-  annotate(geom="text",label = "E", x = 1982, y=3.95,size=5)
-
-length_rare_plot =  ggplot(data= length_rare_data) + 
-  continuous_plot+
-  scale_y_continuous("Mean maximum body length (cm)", 
-                     limits = c(77.66, 145))+
-  annotate(geom="text",label = "F", x = 1982, y=140,size=5)
-
-pdf("figures/Fig. S3.pdf",width=12, height=6)
-
-PlotMultipleGgplotObjs(agg_rare_plot, food_rare_plot, vertical_rare_plot, double_rare_plot,trophic_rare_plot,length_rare_plot,
-                       layout = matrix(c(1:3,1:3, 1:3, 4:6,4:6),ncol = 3,byrow = T))
-dev.off()

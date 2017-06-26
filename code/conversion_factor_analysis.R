@@ -208,7 +208,7 @@ conversion_factors = conv_fit_data %>%
 
 
 write.csv(conversion_factors ,"data/conversion_factors.csv",row.names = F)
-ggsave(filename = "figures/S0 Gearchange conversion estimates.png",
+ggsave(filename = "figures/fig. S5.png",
        plot = conv_gearchange_plot, width = 6, height = 8, units="in", dpi=400)
 
 load("data/year_geom_means.Rdata")
@@ -318,7 +318,7 @@ colV<-c(rep(ColV2[1],9),rep(ColV2[2],5),rep(ColV2[3],23))
 colVseg<-c(rep(ColV2[1],9),rep(ColV2[2],4),NA,rep(ColV2[3],23))
 
 
-png("figures/conversion factor effects.png", height=8,width=12,units="in", res=400)
+png("figures/fig. S6.png", height=8,width=12,units="in", res=400)
 par(mar=c(4,4,1,1),oma=c(2,2,2,2),las=1)
 layout(matrix(c(1,1,4,4,1,1,4,4,2,2,4,4,2,2,5,5,3,3,5,5,3,3,5,5),6,4, byrow=T))
 plot(Total_Biomass$Bmass[1:14]~c(1981:1994),type='l',lty=1, lwd=2, ylab="Biomass (kg/tow)", xlab=NA,ylim=c(0,210),cex.lab=label.V,cex.axis=axis.V,xaxt='n',xlim=c(1981,2013))
@@ -331,7 +331,7 @@ lines(c(1995:2013),Total_Biomass_rare$Bmass[15:33],type='l',lty=3, lwd=2, ylim=c
 abline(v=Eras, lwd=1,lty=2, col=8)
 legend("top",c("total community","non-commercial species"),
        lty=c(1,3),lwd=2,bty='o',bg="white",box.col="#FF003300",inset=0.005,cex=1.1)
-legend("topleft", "A",bty='n', cex=1.8, inset=c(-0.04,-0.025))
+legend("topleft", "(a)",bty='n', cex=1.8, inset=c(-0.04,-0.025))
 
 
 
@@ -346,7 +346,7 @@ lines(Year_Geom_Means_Conv$SEBASTES_MENTELLA[1:14]~c(1981:1994),col=top4_palette
 lines(Year_Geom_Means_Conv$SEBASTES_MENTELLA[15:33]~c(1995:2013),col=top4_palette[4],lwd=2)
 abline(v=Eras, lwd=1,lty=2, col=8)
 legend("topright",legend = c("cod","halibut","plaice","redfish"),lwd=2,col=top4_palette ,box.col="#FF003300",inset=0.005,cex=1.1)
-legend("topleft", "B",bty='n', cex=1.8, inset=c(-0.04,-0.025))
+legend("topleft", "(b)",bty='n', cex=1.8, inset=c(-0.04,-0.025))
 
 
 plot(Func_Div$FDis[1:14]~c(1981:1994),type='l',lty=1, lwd=2, ylab="Functional diversity", 
@@ -355,7 +355,7 @@ lines(Func_Div$FDis[15:33]~c(1995:2013),lty=1, lwd=2)
 lines(c(1981:1994),Func_Div_rare$FDis[1:14],type='l',lty=3, lwd=2, ylim=c(0,1))
 lines(c(1995:2013),Func_Div_rare$FDis[15:33],type='l',lty=3, lwd=2, ylim=c(0,1))
 abline(v=Eras, lwd=1,lty=2, col=8)
-legend("topleft", "C",bty='n', cex=1.8, inset=c(-0.04,-0.025))
+legend("topleft", "(c)",bty='n', cex=1.8, inset=c(-0.04,-0.025))
 
 
 
@@ -370,7 +370,7 @@ text(clust.tax[c(1,10,15,33),1]+c(0,0,0,0),clust.tax[c(1,10,15,33),2]+c(-0.04,0.
 axis(1,at=c(-0.3,0,0.3))
 axis(2,at=c(-0.3,0,0.3))
 legend("bottomright",paste("S = ",round(mds.tax$stress,digits=2)), bty='n', cex=1.2)
-legend("topleft", "D", bty='n', cex=1.8,inset=c(0,0.04))
+legend("topleft", "(d)", bty='n', cex=1.8,inset=c(0,0.04))
 
 
 ordiplot(mds.taxmin4,type="n",xlab="",ylab=NA,xlim=c(-0.4,0.4),ylim=c(-0.3,0.45),
@@ -386,7 +386,7 @@ axis(1,at=c(-0.3,0,0.3))
 axis(2,at=c(-0.3,0,0.3))
 text(clust.taxmin4[c(1,10,15,33),1]+c(0,0.07,0,-0.03), clust.taxmin4[c(1,10,15,33),2]+c(-0.08,-0.05,0.05,-0.05),rownames(Year_Geom_Means)[c(1,10,15,33)],cex=1,col=colV[c(1,10,15,33)])
 legend("bottomright",paste("S = ",round(mds.taxmin4 $stress,digits=2)), bty='n', cex=1.2)
-legend("topleft", "E", bty='n', cex=1.8,inset=c(0,0.04))
+legend("topleft", "(e)", bty='n', cex=1.8,inset=c(0,0.04))
 
 
 dev.off()
